@@ -10,7 +10,9 @@ SOURCES += \
     $$PWD/logger.cpp \
     $$PWD/main.cpp
 
+QT -= gui
 QT += mqtt
+
 CONFIG += c++17 console
 INCLUDEPATH += ../homed-common/
 
