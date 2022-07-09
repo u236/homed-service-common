@@ -25,6 +25,9 @@ public:
     inline DeviceType type(void) { return m_type; }
     inline QString address(void) { return m_address; }
 
+    inline QString name(void) { return m_name.isEmpty() ? m_address : m_name; }
+    inline void setName(QString value) { m_name = value; }
+
     inline QVariant status(void)  { return m_status; }
     inline void setStatus(QVariant value) { m_status = value; }
 
@@ -32,6 +35,7 @@ private:
 
     DeviceType m_type;
     QString m_address;
+    QString m_name;
     QVariant m_status;
 
 };
@@ -47,6 +51,8 @@ public:
 
     Device add(const QString &typeName, const QString &address);
     Device get(const QString &typeName, const QString &address);
+
+    QString typeName(DeviceType type);
 
 private:
 
