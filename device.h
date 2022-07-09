@@ -52,7 +52,7 @@ public:
     Device add(const QString &typeName, const QString &address);
     Device get(const QString &typeName, const QString &address);
 
-    QString typeName(DeviceType type);
+    QString getTypeName(DeviceType type);
 
 private:
 

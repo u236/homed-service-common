@@ -38,7 +38,7 @@ Device DeviceList::get(const QString &typeName, const QString &address)
     return Device();
 }
 
-QString DeviceList::typeName(DeviceType type)
+QString DeviceList::getTypeName(DeviceType type)
 {
     for (auto it = m_typeNames.begin(); it != m_typeNames.end(); it++)
         if (it.value() == type)
