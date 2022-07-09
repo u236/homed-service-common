@@ -1,11 +1,8 @@
 HEADERS += \
-    $$PWD/gpio.h \
-    $$PWD/gpio.h \
     $$PWD/homed.h \
     $$PWD/logger.h
 
 SOURCES += \
-    $$PWD/gpio.cpp \
     $$PWD/homed.cpp \
     $$PWD/logger.cpp \
     $$PWD/main.cpp

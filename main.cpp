@@ -17,7 +17,7 @@ int main(int argc, char **argv)
 
     if (application.arguments().value(1) == "-v")
     {
-        printf("HOMEd 3.0.0\n");
+        printf("%s %s\n", application.applicationName().toUtf8().constData(), SERVICE_VERSION);
         return EXIT_SUCCESS;
     }
 
