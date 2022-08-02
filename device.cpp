@@ -2,17 +2,17 @@
 
 DeviceList::DeviceList(void)
 {
-    m_typeNames.insert("modbus", DeviceType::Modbus);
-    m_typeNames.insert("onewire", DeviceType::OneWire);
-    m_typeNames.insert("zigbee", DeviceType::ZigBee);
-    m_typeNames.insert("miio", DeviceType::MIIO);
+    m_busNames.insert("modbus", DeviceBus::Modbus);
+    m_busNames.insert("onewire", DeviceBus::OneWire);
+    m_busNames.insert("zigbee", DeviceBus::ZigBee);
+    m_busNames.insert("miio", DeviceBus::MIIO);
 }
 
-Device DeviceList::add(const QString &typeName, const QString &address)
+Device DeviceList::add(const QString &busName, const QString &address)
 {
-    auto it = m_typeNames.find(typeName);
+    auto it = m_busNames.find(busName);
 
-    if (it != m_typeNames.end())
+    if (it != m_busNames.end())
     {
         Device device = findDevice(it.value(), address);
 
@@ -28,32 +28,32 @@ Device DeviceList::add(const QString &typeName, const QString &address)
     return Device();
 }
 
-Device DeviceList::get(const QString &typeName, const QString &address)
+Device DeviceList::get(const QString &busName, const QString &address)
 {
-    auto it = m_typeNames.find(typeName);
+    auto it = m_busNames.find(busName);
 
-    if (it != m_typeNames.end())
+    if (it != m_busNames.end())
         return findDevice(it.value(), address);
 
     return Device();
 }
 
-QString DeviceList::getTypeName(DeviceType type)
+QString DeviceList::getBusName(DeviceBus bus)
 {
-    for (auto it = m_typeNames.begin(); it != m_typeNames.end(); it++)
-        if (it.value() == type)
+    for (auto it = m_busNames.begin(); it != m_busNames.end(); it++)
+        if (it.value() == bus)
             return it.key();
 
     return "undefined";
 }
 
-Device DeviceList::findDevice(DeviceType type, const QString &address)
+Device DeviceList::findDevice(DeviceBus bus, const QString &address)
 {
     for (int i = 0; i < m_devices.count(); i++)
     {
         Device device = m_devices.value(i);
 
-        if (device->type() == type && device->address() == address)
+        if (device->bus() == bus && device->address() == address)
             return device;
     }
 

@@ -7,7 +7,7 @@
 class DeviceObject;
 typedef QSharedPointer <DeviceObject> Device;
 
-enum class DeviceType
+enum class DeviceBus
 {
     Modbus,
     OneWire,
@@ -20,9 +20,9 @@ class DeviceObject
 
 public:
 
-    DeviceObject(DeviceType type, const QString &address) : m_type(type), m_address(address) {}
+    DeviceObject(DeviceBus bus, const QString &address) : m_bus(bus), m_address(address) {}
 
-    inline DeviceType type(void) { return m_type; }
+    inline DeviceBus bus(void) { return m_bus; }
     inline QString address(void) { return m_address; }
 
     inline QString name(void) { return m_name.isEmpty() ? m_address : m_name; }
@@ -33,7 +33,7 @@ public:
 
 private:
 
-    DeviceType m_type;
+    DeviceBus m_bus;
     QString m_address;
     QString m_name;
     QVariant m_status;
@@ -49,17 +49,17 @@ public:
 
     inline void clear(void) { m_devices.clear(); }
 
-    Device add(const QString &typeName, const QString &address);
-    Device get(const QString &typeName, const QString &address);
+    Device add(const QString &busName, const QString &address);
+    Device get(const QString &busName, const QString &address);
 
-    QString getTypeName(DeviceType type);
+    QString getBusName(DeviceBus bus);
 
 private:
 
-    QMap <QString, DeviceType> m_typeNames;
+    QMap <QString, DeviceBus> m_busNames;
     QList <Device> m_devices;
 
-    Device findDevice(DeviceType type, const QString &address);
+    Device findDevice(DeviceBus bus, const QString &address);
 
 };
 
