@@ -35,7 +35,11 @@ HOMEd::HOMEd(void) : QObject(nullptr), m_timestamp(QDateTime::currentDateTime())
 
 void HOMEd::quit(void)
 {
+    QString service = QCoreApplication::applicationName().split("-").last();
+
+    mqttPublish(QString("homed/service/%1").arg(service), {{"stopped", QDateTime::currentDateTime().toString(Qt::ISODateWithMs)}, {"uptime", m_elapsedTimer->elapsed() / 1000}}, true);
     logInfo << "Goodbye!";
+
     m_mqtt->disconnectFromHost();
     delete m_elapsedTimer;
 }
@@ -69,7 +73,7 @@ void HOMEd::mqttReconnect(void)
 void HOMEd::statusUpdate(void)
 {
     QString service = QCoreApplication::applicationName().split("-").last();
-    mqttPublish(QString("homed/service/%1").arg(service), {{"started", m_timestamp.toString("yyyy.MM.dd hh:mm:ss.zzz")}, {"uptime", m_elapsedTimer->elapsed() / 1000}}, true);
+    mqttPublish(QString("homed/service/%1").arg(service), {{"started", m_timestamp.toString(Qt::ISODateWithMs)}, {"uptime", m_elapsedTimer->elapsed() / 1000}}, true);
 }
 
 void HOMEd::configChanged(void)
