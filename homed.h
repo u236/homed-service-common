@@ -37,15 +37,14 @@ protected:
 
 private:
 
+    QString m_service, m_topicPrefix;
+
     QMqttClient *m_mqtt;
     QElapsedTimer *m_elapsedTimer;
-    QTimer *m_reconnectTimer, *m_updateTimer;
+    QTimer *m_reconnectTimer;
 
     QSettings *m_config;
     QFileSystemWatcher *m_watcher;
-
-    QDateTime m_timestamp;
-    QString m_topicPrefix;
 
 public slots:
 
@@ -56,9 +55,9 @@ private slots:
     virtual void mqttConnected(void) = 0;
     virtual void mqttReceived(const QByteArray &message, const QMqttTopicName &topic) = 0;
 
+    void publishStatus(void);
     void mqttDisconnected(void);
     void mqttReconnect(void);
-    void statusUpdate(void);
     void configChanged(void);
 
 };
