@@ -4,7 +4,7 @@
 #include <signal.h>
 #include "homed.h"
 
-HOMEd::HOMEd(void) : QObject(nullptr), m_timestamp(QDateTime::currentDateTime()), m_mqtt(new QMqttClient(this)), m_elapsedTimer(new QElapsedTimer), m_reconnectTimer(new QTimer(this)), m_updateTimer(new QTimer(this)), m_watcher(new QFileSystemWatcher(this))
+HOMEd::HOMEd(void) : QObject(nullptr), m_mqtt(new QMqttClient(this)), m_elapsedTimer(new QElapsedTimer), m_reconnectTimer(new QTimer(this)), m_updateTimer(new QTimer(this)), m_watcher(new QFileSystemWatcher(this)), m_timestamp(QDateTime::currentDateTime())
 {
     QString config = QCoreApplication::applicationName().append(".conf");
 
@@ -15,6 +15,8 @@ HOMEd::HOMEd(void) : QObject(nullptr), m_timestamp(QDateTime::currentDateTime())
     m_mqtt->setPort(static_cast <quint16> (m_config->value("mqtt/port", 1883).toInt()));
     m_mqtt->setUsername(m_config->value("mqtt/username").toString());
     m_mqtt->setPassword(m_config->value("mqtt/password").toString());
+
+    m_topicPrefix = m_config->value("mqtt/prefix", "homed").toString();
 
     connect(m_mqtt, &QMqttClient::connected, this, &HOMEd::mqttConnected, Qt::QueuedConnection);
     connect(m_mqtt, &QMqttClient::connected, this, &HOMEd::statusUpdate, Qt::QueuedConnection);
@@ -37,7 +39,7 @@ void HOMEd::quit(void)
 {
     QString service = QCoreApplication::applicationName().split("-").last();
 
-    mqttPublish(QString("homed/service/%1").arg(service), {{"stopped", QDateTime::currentDateTime().toString(Qt::ISODateWithMs)}, {"uptime", m_elapsedTimer->elapsed() / 1000}}, true);
+    mqttPublish(mqttTopic("service/%1").arg(service), {{"stopped", QDateTime::currentDateTime().toString(Qt::ISODateWithMs)}, { "uptime", m_elapsedTimer->elapsed() / 1000}}, true);
     logInfo << "Goodbye!";
 
     m_mqtt->disconnectFromHost();
@@ -59,6 +61,11 @@ void HOMEd::mqttPublish(const QString &topic, const QJsonObject &json, bool reta
     m_mqtt->publish(topic, QJsonDocument(json).toJson(QJsonDocument::Compact), MQTT_DEFAULT_QOS, retain);
 }
 
+QString HOMEd::mqttTopic(const QString &topic)
+{
+    return QString("%1/%2").arg(m_topicPrefix, topic);
+}
+
 void HOMEd::mqttDisconnected(void)
 {
     logWarning << "MQTT disconnected";
@@ -73,7 +80,7 @@ void HOMEd::mqttReconnect(void)
 void HOMEd::statusUpdate(void)
 {
     QString service = QCoreApplication::applicationName().split("-").last();
-    mqttPublish(QString("homed/service/%1").arg(service), {{"started", m_timestamp.toString(Qt::ISODateWithMs)}, {"uptime", m_elapsedTimer->elapsed() / 1000}}, true);
+    mqttPublish(mqttTopic("service/%1").arg(service), {{"started", m_timestamp.toString(Qt::ISODateWithMs)}, {"uptime", m_elapsedTimer->elapsed() / 1000}}, true);
 }
 
 void HOMEd::configChanged(void)

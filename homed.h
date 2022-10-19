@@ -33,9 +33,9 @@ protected:
     void mqttUnsubscribe(const QString &topic);
     void mqttPublish(const QString &topic, const QJsonObject &json, bool retain = false);
 
-private:
+    QString mqttTopic(const QString &topic);
 
-    QDateTime m_timestamp;
+private:
 
     QMqttClient *m_mqtt;
     QElapsedTimer *m_elapsedTimer;
@@ -43,6 +43,9 @@ private:
 
     QSettings *m_config;
     QFileSystemWatcher *m_watcher;
+
+    QDateTime m_timestamp;
+    QString m_topicPrefix;
 
 public slots:
 
