@@ -14,9 +14,9 @@ public:
         Output
     };
 
-    static void setDirection(qint16 gpio, Direction direction);
-    static void setStatus(qint16 gpio, bool status);
-    static bool getStatus(qint16 gpio);
+    static void direction(const QString &gpio, Direction direction);
+    static void setStatus(const QString &gpio, bool status);
+    static bool getStatus(const QString &gpio);
 
 };
 
