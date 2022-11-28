@@ -1,4 +1,5 @@
 #include <QCoreApplication>
+#include <QDir>
 #include <QLockFile>
 #include <signal.h>
 #include "controller.h"
@@ -11,9 +12,7 @@ static void signalHandler(int)
 int main(int argc, char **argv)
 {
     QCoreApplication application(argc, argv);
-    QLockFile lock(QString("/tmp/%1.lock").arg(application.applicationName()));
-
-    // TODO: add -f option to set config file location
+    QLockFile lock(QString("%1%2%3.lock").arg(QDir::tempPath(), QDir::separator(), application.applicationName()));
 
     if (application.arguments().value(1) == "-v")
     {

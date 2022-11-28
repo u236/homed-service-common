@@ -59,7 +59,7 @@ void HOMEd::mqttUnsubscribe(const QString &topic)
 
 void HOMEd::mqttPublish(const QString &topic, const QJsonObject &json, bool retain)
 {
-    m_mqtt->publish(topic, QJsonDocument(json).toJson(QJsonDocument::Compact), MQTT_DEFAULT_QOS, retain);
+    m_mqtt->publish(topic, json.isEmpty() ? QByteArray() : QJsonDocument(json).toJson(QJsonDocument::Compact), MQTT_DEFAULT_QOS, retain);
 }
 
 QString HOMEd::mqttTopic(const QString &topic)
