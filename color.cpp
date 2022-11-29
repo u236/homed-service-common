@@ -79,10 +79,10 @@ void Color::toXY(double *x, double *y)
 
 double Color::correctGamma(double value)
 {
-    return value <= 0.003131 ? value * 12.92 : pow(value, 1 / 2.4) * 1.055 - 0.055;
+    return value <= 0.0031306684425006 ? value * 12.92 : pow(value, 1 / 2.4) * 1.055 - 0.055;
 }
 
 double Color::reverseGamma(double value)
 {
-    return value <= 0.040448 ? value / 12.92 : pow((value + 0.055) / 1.055, 2.4);
+    return value <= 0.0404482362771076 ? value / 12.92 : pow((value + 0.055) / 1.055, 2.4);
 }
