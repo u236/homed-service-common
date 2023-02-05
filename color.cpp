@@ -18,12 +18,12 @@ Color Color::fromHS(double h, double s)
 
     switch (static_cast <quint8> (p) % 6)
     {
-        case 0:  return Color(1, k, i);
-        case 1:  return Color(j, 1, i);
-        case 2:  return Color(i, 1, k);
-        case 3:  return Color(i, j, 1);
-        case 4:  return Color(k, i, 1);
-        case 5:  return Color(1, i, j);
+        case 0: return Color(1, k, i);
+        case 1: return Color(j, 1, i);
+        case 2: return Color(i, 1, k);
+        case 3: return Color(i, j, 1);
+        case 4: return Color(k, i, 1);
+        case 5: return Color(1, i, j);
     }
 
     return Color(0, 0, 0);
