@@ -4,11 +4,9 @@
 #include <signal.h>
 #include "homed.h"
 
-HOMEd::HOMEd(void) : QObject(nullptr), m_mqtt(new QMqttClient(this)), m_elapsedTimer(new QElapsedTimer), m_reconnectTimer(new QTimer(this)), m_watcher(new QFileSystemWatcher(this))
+HOMEd::HOMEd(const QString &configFile) : QObject(nullptr), m_mqtt(new QMqttClient(this)), m_elapsedTimer(new QElapsedTimer), m_reconnectTimer(new QTimer(this)), m_watcher(new QFileSystemWatcher(this))
 {
-    QString config = QCoreApplication::applicationName().append(".conf");
-
-    m_config = new QSettings(QFileInfo::exists(config) ? config : config.prepend("/etc/homed/"), QSettings::IniFormat, this);
+    m_config = new QSettings(QFileInfo::exists(configFile) ? configFile : QString("/etc/homed/%1.conf").arg(QCoreApplication::applicationName()), QSettings::IniFormat, this);
     m_watcher->addPath(m_config->fileName());
 
     m_service = QCoreApplication::applicationName().split("-").last();

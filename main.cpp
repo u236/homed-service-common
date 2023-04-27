@@ -13,12 +13,16 @@ int main(int argc, char **argv)
 {
     QCoreApplication application(argc, argv);
     QLockFile lock(QString("%1%2%3.lock").arg(QDir::tempPath(), QDir::separator(), application.applicationName()));
+    QString configFile;
 
     if (application.arguments().value(1) == "-v")
     {
         printf("%s %s\n", application.applicationName().toUtf8().constData(), SERVICE_VERSION);
         return EXIT_SUCCESS;
     }
+
+    if (application.arguments().value(1) == "-c")
+        configFile = application.arguments().value(2);
 
     if (lock.tryLock(1000))
     {
@@ -29,7 +33,7 @@ int main(int argc, char **argv)
 
         while (result == EXIT_RESTART)
         {
-            Controller controller;
+            Controller controller(configFile);
             QObject::connect(&application, &QCoreApplication::aboutToQuit, &controller, &Controller::quit);
             result = application.exec();
         }

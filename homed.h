@@ -23,7 +23,7 @@ class HOMEd : public QObject
 
 public:
 
-    HOMEd(void);
+    HOMEd(const QString &configFile);
 
 protected:
 
