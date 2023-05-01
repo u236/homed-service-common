@@ -31,7 +31,9 @@ protected:
 
     void mqttSubscribe(const QString &topic);
     void mqttUnsubscribe(const QString &topic);
+
     void mqttPublish(const QString &topic, const QJsonObject &json, bool retain = false);
+    void mqttPublishString(const QString &topic, const QString &message, bool retain = false);
 
     QString mqttTopic(const QString &topic = QString());
 

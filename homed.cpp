@@ -60,6 +60,11 @@ void HOMEd::mqttPublish(const QString &topic, const QJsonObject &json, bool reta
     m_mqtt->publish(topic, json.isEmpty() ? QByteArray() : QJsonDocument(json).toJson(QJsonDocument::Compact), MQTT_DEFAULT_QOS, retain);
 }
 
+void HOMEd::mqttPublishString(const QString &topic, const QString &message, bool retain)
+{
+    m_mqtt->publish(topic, message.toUtf8(), MQTT_DEFAULT_QOS, retain);
+}
+
 QString HOMEd::mqttTopic(const QString &topic)
 {
     return QString("%1/%2").arg(m_topicPrefix, topic);
