@@ -17,5 +17,5 @@ QMAKE_POST_LINK = $(STRIP) $(TARGET)
 CONFIG += c++17 console exceptions_off ltcg object_parallel_to_source rtti_off
 INCLUDEPATH += ../homed-common/
 
-target.path = /usr/local/bin
+target.path = /usr/bin
 INSTALLS += target
