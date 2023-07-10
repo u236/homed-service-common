@@ -15,7 +15,6 @@
 #include <QJsonObject>
 #include <QSettings>
 #include <QTimer>
-#include "logger.h"
 
 class HOMEd : public QObject
 {

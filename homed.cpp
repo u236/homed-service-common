@@ -3,11 +3,16 @@
 #include <QProcess>
 #include <signal.h>
 #include "homed.h"
+#include "logger.h"
 
 HOMEd::HOMEd(const QString &configFile) : QObject(nullptr), m_mqtt(new QMqttClient(this)), m_elapsedTimer(new QElapsedTimer), m_reconnectTimer(new QTimer(this)), m_watcher(new QFileSystemWatcher(this))
 {
     m_config = new QSettings(QFileInfo::exists(configFile) ? configFile : QString("/etc/homed/%1.conf").arg(QCoreApplication::applicationName()), QSettings::IniFormat, this);
     m_watcher->addPath(m_config->fileName());
+
+    setLogEnabled(m_config->value("log/enabled", false).toBool());
+    setLogFile(m_config->value("log/file", "/var/log/homed.log").toString());
+    qInstallMessageHandler(logger);
 
     m_service = QCoreApplication::applicationName().split("-").last();
     m_topicPrefix = m_config->value("mqtt/prefix", "homed").toString();
@@ -27,8 +32,6 @@ HOMEd::HOMEd(const QString &configFile) : QObject(nullptr), m_mqtt(new QMqttClie
 
     connect(m_reconnectTimer, &QTimer::timeout, this, &HOMEd::mqttReconnect, Qt::QueuedConnection);
     connect(m_watcher, &QFileSystemWatcher::fileChanged, this, &HOMEd::configChanged, Qt::QueuedConnection);
-
-    qInstallMessageHandler(logger);
 
     m_mqtt->connectToHost();
     m_elapsedTimer->start();
@@ -88,6 +91,6 @@ void HOMEd::mqttReconnect(void)
 
 void HOMEd::configChanged(void)
 {
-    logWarning << "Config file changed, restarting";
+    logWarning << "Configuration file changed, restarting";
     QCoreApplication::exit(EXIT_RESTART);
 }
