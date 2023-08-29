@@ -14,7 +14,7 @@ HOMEd::HOMEd(const QString &configFile) : QObject(nullptr), m_mqtt(new QMqttClie
     setLogFile(m_config->value("log/file", "/var/log/homed.log").toString());
     qInstallMessageHandler(logger);
 
-    m_service = QCoreApplication::applicationName().split("-").last();
+    m_serviceName = QCoreApplication::applicationName().split("-").last();
     m_topicPrefix = m_config->value("mqtt/prefix", "homed").toString();
 
     m_mqtt->setHostname(m_config->value("mqtt/host", "localhost").toString());
@@ -22,7 +22,7 @@ HOMEd::HOMEd(const QString &configFile) : QObject(nullptr), m_mqtt(new QMqttClie
     m_mqtt->setUsername(m_config->value("mqtt/username").toString());
     m_mqtt->setPassword(m_config->value("mqtt/password").toString());
 
-    m_mqtt->setWillTopic(mqttTopic("service/%1").arg(m_service));
+    m_mqtt->setWillTopic(mqttTopic("service/%1").arg(m_serviceName));
     m_mqtt->setWillMessage(QJsonDocument(QJsonObject {{"status", "offline"}}).toJson(QJsonDocument::Compact));
 
     connect(m_mqtt, &QMqttClient::connected, this, &HOMEd::publishStatus, Qt::QueuedConnection);
@@ -42,7 +42,7 @@ void HOMEd::quit(void)
 {
     logInfo << "Goodbye!";
 
-    mqttPublish(mqttTopic("service/%1").arg(m_service), {{"status", "offline"}}, true);
+    mqttPublish(mqttTopic("service/%1").arg(m_serviceName), {{"status", "offline"}}, true);
     m_mqtt->disconnectFromHost();
 
     delete m_elapsedTimer;
@@ -75,7 +75,7 @@ QString HOMEd::mqttTopic(const QString &topic)
 
 void HOMEd::publishStatus(void)
 {
-    mqttPublish(mqttTopic("service/%1").arg(m_service), {{"status", "online"}}, true);
+    mqttPublish(mqttTopic("service/%1").arg(m_serviceName), {{"status", "online"}}, true);
 }
 
 void HOMEd::mqttDisconnected(void)

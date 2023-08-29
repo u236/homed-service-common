@@ -3,6 +3,7 @@
 
 #include <QSharedPointer>
 #include <QVariant>
+#include "homed.h"
 
 class ExposeObject;
 typedef QSharedPointer <ExposeObject> Expose;
@@ -39,11 +40,14 @@ class AbstractDeviceObject : public QObject
 
 public:
 
-    AbstractDeviceObject(void) :
-        QObject(nullptr),  m_version(0) {}
+    AbstractDeviceObject(const QString &name) :
+        QObject(nullptr), m_version(0), m_name(name) {}
 
     inline quint8 version(void) { return m_version; }
     inline void setVersion(quint8 value) { m_version = value; }
+
+    inline QString name(void) { return m_name; }
+    inline void setName(const QString &value) { m_name = value; }
 
     inline QString manufacturerName(void) { return m_manufacturerName; }
     inline void setManufacturerName(const QString &value) { m_manufacturerName = value; }
@@ -51,16 +55,23 @@ public:
     inline QString modelName(void) { return m_modelName; }
     inline void setModelName(const QString &value) { m_modelName = value; }
 
-    inline QMap <QString, QVariant> &options(void) { return m_options; }
+    inline QString description(void) { return m_description; }
+    inline void setDescription(const QString &value) { m_description = value; }
+
+    inline QMap <quint8, AbstractEndpointObject*> &abstractEndpoints(void) { return m_abstractEndpoints; }
     inline QMap <quint8, Endpoint> &endpoints(void) { return m_endpoints; }
+    inline QMap <QString, QVariant> &options(void) { return m_options; }
+
+    void publishExposes(HOMEd *controller, const QString &address, const QString uniqueId, bool remove = false);
 
 protected:
 
     quint8 m_version;
-    QString m_manufacturerName, m_modelName;
+    QString m_name, m_manufacturerName, m_modelName, m_description;
 
-    QMap <QString, QVariant> m_options;
+    QMap <quint8, AbstractEndpointObject*> m_abstractEndpoints;
     QMap <quint8, Endpoint> m_endpoints;
+    QMap <QString, QVariant> m_options;
 
 };
 

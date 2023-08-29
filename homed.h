@@ -24,8 +24,7 @@ public:
 
     HOMEd(const QString &configFile);
 
-protected:
-
+    inline QString serviceName(void) { return m_serviceName; }
     inline QSettings *getConfig(void) { return m_config; }
 
     void mqttSubscribe(const QString &topic);
@@ -38,7 +37,7 @@ protected:
 
 private:
 
-    QString m_service, m_topicPrefix;
+    QString m_serviceName, m_topicPrefix;
 
     QMqttClient *m_mqtt;
     QElapsedTimer *m_elapsedTimer;
