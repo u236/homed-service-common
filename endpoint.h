@@ -14,13 +14,14 @@ typedef QSharedPointer <EndpointObject> Endpoint;
 class DeviceObject;
 typedef QSharedPointer <DeviceObject> Device;
 
-class AbstractEndpointObject
+class AbstractEndpointObject : public QObject
 {
+    Q_OBJECT
 
 public:
 
     AbstractEndpointObject(quint8 id, Device device) :
-        m_id(id), m_device(device) {}
+        QObject(nullptr), m_id(id), m_device(device) {}
 
     inline quint8 id(void) { return m_id; }
     inline Device device(void) { return m_device; }
@@ -58,9 +59,8 @@ public:
     inline QString description(void) { return m_description; }
     inline void setDescription(const QString &value) { m_description = value; }
 
-    inline QMap <quint8, AbstractEndpointObject*> &abstractEndpoints(void) { return m_abstractEndpoints; }
-    inline QMap <quint8, Endpoint> &endpoints(void) { return m_endpoints; }
     inline QMap <QString, QVariant> &options(void) { return m_options; }
+    inline QMap <quint8, Endpoint> &endpoints(void) { return m_endpoints; }
 
     void publishExposes(HOMEd *controller, const QString &address, const QString uniqueId, bool remove = false);
 
@@ -69,9 +69,8 @@ protected:
     quint8 m_version;
     QString m_name, m_manufacturerName, m_modelName, m_description;
 
-    QMap <quint8, AbstractEndpointObject*> m_abstractEndpoints;
-    QMap <quint8, Endpoint> m_endpoints;
     QMap <QString, QVariant> m_options;
+    QMap <quint8, Endpoint> m_endpoints;
 
 };
 

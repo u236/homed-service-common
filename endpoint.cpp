@@ -7,11 +7,13 @@ void AbstractDeviceObject::publishExposes(HOMEd *controller, const QString &addr
     QString prefix = controller->getConfig()->value("homeassistant/prefix", "homeassistant").toString();
     QMap <QString, QVariant> data, endpointName = m_options.value("endpointName").toMap();
 
-    for (auto it = m_abstractEndpoints.begin(); it != m_abstractEndpoints.end(); it++)
+    for (auto it = m_endpoints.begin(); it != m_endpoints.end(); it++)
     {
-        for (int i = 0; i < it.value()->exposes().count(); i++)
+        AbstractEndpointObject *endpoint = reinterpret_cast <AbstractEndpointObject*> (it.value().data());
+
+        for (int i = 0; i < endpoint->exposes().count(); i++)
         {
-            const Expose &expose = it.value()->exposes().at(i);
+            const Expose &expose = endpoint->exposes().at(i);
             QVariant option = expose->option();
 
             if (controller->getConfig()->value("homeassistant/enabled", false).toBool() && expose->homeassistant())
