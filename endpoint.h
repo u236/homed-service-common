@@ -14,13 +14,20 @@ typedef QSharedPointer <EndpointObject> Endpoint;
 class DeviceObject;
 typedef QSharedPointer <DeviceObject> Device;
 
+enum class Availability
+{
+    Unknown,
+    Online,
+    Offline
+};
+
 class AbstractEndpointObject : public QObject
 {
     Q_OBJECT
 
 public:
 
-    AbstractEndpointObject(quint8 id, Device device) :
+    AbstractEndpointObject(quint8 id, const Device &device) :
         QObject(nullptr), m_id(id), m_device(device) {}
 
     inline quint8 id(void) { return m_id; }
@@ -42,7 +49,7 @@ class AbstractDeviceObject : public QObject
 public:
 
     AbstractDeviceObject(const QString &name) :
-        QObject(nullptr), m_version(0), m_name(name) {}
+        QObject(nullptr), m_version(0), m_name(name), m_availability(Availability::Unknown) {}
 
     inline quint8 version(void) { return m_version; }
     inline void setVersion(quint8 value) { m_version = value; }
@@ -59,6 +66,9 @@ public:
     inline QString description(void) { return m_description; }
     inline void setDescription(const QString &value) { m_description = value; }
 
+    inline Availability availability(void) { return m_availability; }
+    inline void setAvailability(Availability value) { m_availability = value; }
+
     inline QMap <QString, QVariant> &options(void) { return m_options; }
     inline QMap <quint8, Endpoint> &endpoints(void) { return m_endpoints; }
 
@@ -68,6 +78,8 @@ protected:
 
     quint8 m_version;
     QString m_name, m_manufacturerName, m_modelName, m_description;
+
+    Availability m_availability;
 
     QMap <QString, QVariant> m_options;
     QMap <quint8, Endpoint> m_endpoints;
