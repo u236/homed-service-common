@@ -7,12 +7,17 @@
 
 HOMEd::HOMEd(const QString &configFile) : QObject(nullptr), m_mqtt(new QMqttClient(this)), m_elapsedTimer(new QElapsedTimer), m_reconnectTimer(new QTimer(this)), m_watcher(new QFileSystemWatcher(this))
 {
+    QDate date = QDate::currentDate();
+
     m_config = new QSettings(QFileInfo::exists(configFile) ? configFile : QString("/etc/homed/%1.conf").arg(QCoreApplication::applicationName()), QSettings::IniFormat, this);
     m_watcher->addPath(m_config->fileName());
 
     setLogEnabled(m_config->value("log/enabled", false).toBool());
     setLogFile(m_config->value("log/file", "/var/log/homed.log").toString());
     qInstallMessageHandler(logger);
+
+    if (date > QDate(date.year(), 12, 23) && date < QDate(date.year() + 1, 1, 15))
+        logInfo << "Merry Christmas and a Happy New Year!" << "\xF0\x9F\x8E\x81\xF0\x9F\x8E\x84\xF0\x9F\x8D\xBA";
 
     m_serviceName = QCoreApplication::applicationName().split("-").last();
     m_topicPrefix = m_config->value("mqtt/prefix", "homed").toString();
