@@ -303,12 +303,12 @@ namespace Sensor
 
     };
 
-    class Energy : public SensorObject
+    class Frequency : public SensorObject
     {
 
     public:
 
-        Energy(void) : SensorObject("energy", "kWh", 2) {}
+        Frequency(void) : SensorObject("frequency", "Hz", 1) {}
 
     };
 
@@ -336,6 +336,15 @@ namespace Sensor
     public:
 
         Power(void) : SensorObject("power", "W", 2) {}
+
+    };
+
+    class Energy : public SensorObject
+    {
+
+    public:
+
+        Energy(void) : SensorObject("energy", "kWh", 2) {}
 
     };
 

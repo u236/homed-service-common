@@ -26,10 +26,11 @@ void ExposeObject::registerMetaTypes(void)
     qRegisterMetaType <Sensor::ECO2>                ("eco2Expose");
     qRegisterMetaType <Sensor::VOC>                 ("vocExpose");
     qRegisterMetaType <Sensor::Illuminance>         ("illuminanceExpose");
-    qRegisterMetaType <Sensor::Energy>              ("energyExpose");
+    qRegisterMetaType <Sensor::Frequency>           ("frequencyExpose");
     qRegisterMetaType <Sensor::Voltage>             ("voltageExpose");
     qRegisterMetaType <Sensor::Current>             ("currentExpose");
     qRegisterMetaType <Sensor::Power>               ("powerExpose");
+    qRegisterMetaType <Sensor::Energy>              ("energyExpose");
     qRegisterMetaType <Sensor::TargetDistance>      ("targetDistanceExpose");
     qRegisterMetaType <Sensor::Count>               ("countExpose");
     qRegisterMetaType <Sensor::Position>            ("positionExpose");
