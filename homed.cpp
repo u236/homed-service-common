@@ -96,6 +96,6 @@ void HOMEd::mqttReconnect(void)
 
 void HOMEd::configChanged(void)
 {
-    logWarning << "Configuration file changed, restarting";
+    logWarning << "Configuration file changed, restarting...";
     QCoreApplication::exit(EXIT_RESTART);
 }
