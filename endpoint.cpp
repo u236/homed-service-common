@@ -171,5 +171,5 @@ QString AbstractMetaObject::manufacturerName(void)
 
 QString AbstractMetaObject::modelName(void)
 {
-    return reinterpret_cast <AbstractDeviceObject*> (m_parent->device().data())->manufacturerName();
+    return reinterpret_cast <AbstractDeviceObject*> (m_parent->device().data())->modelName();
 }
