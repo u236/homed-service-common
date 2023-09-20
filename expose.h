@@ -357,15 +357,6 @@ namespace Sensor
 
     };
 
-    class Count : public SensorObject
-    {
-
-    public:
-
-        Count(void) : SensorObject("count") {}
-
-    };
-
     class Position : public SensorObject
     {
 

@@ -32,7 +32,6 @@ void ExposeObject::registerMetaTypes(void)
     qRegisterMetaType <Sensor::Power>               ("powerExpose");
     qRegisterMetaType <Sensor::Energy>              ("energyExpose");
     qRegisterMetaType <Sensor::TargetDistance>      ("targetDistanceExpose");
-    qRegisterMetaType <Sensor::Count>               ("countExpose");
     qRegisterMetaType <Sensor::Position>            ("positionExpose");
     qRegisterMetaType <Sensor::Action>              ("actionExpose");
     qRegisterMetaType <Sensor::Event>               ("eventExpose");
