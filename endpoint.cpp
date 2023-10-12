@@ -173,3 +173,8 @@ QString AbstractMetaObject::modelName(void)
 {
     return reinterpret_cast <AbstractDeviceObject*> (m_parent->device().data())->modelName();
 }
+
+QMap <QString, QVariant> &AbstractMetaObject::meta(void)
+{
+    return m_parent->meta();
+}

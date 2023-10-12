@@ -32,12 +32,14 @@ public:
 
     inline quint8 id(void) { return m_id; }
     inline Device device(void) { return m_device; }
+    inline QMap <QString, QVariant> &meta(void) { return m_meta; }
     inline QList <Expose> &exposes(void) { return m_exposes; }
 
 protected:
 
     quint8 m_id;
     QWeakPointer <DeviceObject> m_device;
+    QMap <QString, QVariant> m_meta;
     QList <Expose> m_exposes;
 
 };
@@ -109,6 +111,8 @@ protected:
 
     QString manufacturerName(void);
     QString modelName(void);
+
+    QMap <QString, QVariant> &meta(void);
 
 };
 
