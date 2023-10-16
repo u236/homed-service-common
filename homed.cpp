@@ -5,7 +5,7 @@
 #include "homed.h"
 #include "logger.h"
 
-HOMEd::HOMEd(const QString &configFile) : QObject(nullptr), m_mqtt(new QMqttClient(this)), m_elapsedTimer(new QElapsedTimer), m_reconnectTimer(new QTimer(this)), m_watcher(new QFileSystemWatcher(this))
+HOMEd::HOMEd(const QString &configFile) : QObject(nullptr), m_connected(false), m_mqtt(new QMqttClient(this)), m_elapsedTimer(new QElapsedTimer), m_reconnectTimer(new QTimer(this)), m_watcher(new QFileSystemWatcher(this))
 {
     QDate date = QDate::currentDate();
 
@@ -31,7 +31,6 @@ HOMEd::HOMEd(const QString &configFile) : QObject(nullptr), m_mqtt(new QMqttClie
     m_mqtt->setWillMessage(QJsonDocument(QJsonObject {{"status", "offline"}}).toJson(QJsonDocument::Compact));
 
     connect(m_mqtt, &QMqttClient::connected, this, &HOMEd::publishStatus, Qt::QueuedConnection);
-    connect(m_mqtt, &QMqttClient::connected, this, &HOMEd::mqttConnected, Qt::QueuedConnection);
     connect(m_mqtt, &QMqttClient::messageReceived, this, &HOMEd::mqttReceived, Qt::QueuedConnection);
     connect(m_mqtt, &QMqttClient::disconnected, this, &HOMEd::mqttDisconnected, Qt::QueuedConnection);
 
@@ -80,11 +79,14 @@ QString HOMEd::mqttTopic(const QString &topic)
 
 void HOMEd::publishStatus(void)
 {
+    m_connected = true;
     mqttPublish(mqttTopic("service/%1").arg(m_serviceName), {{"status", "online"}}, true);
+    mqttConnected();
 }
 
 void HOMEd::mqttDisconnected(void)
 {
+    m_connected = false;
     logWarning << "MQTT disconnected";
     m_reconnectTimer->start(MQTT_RECONNECT_INTERVAL);
 }

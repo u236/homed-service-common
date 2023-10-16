@@ -25,6 +25,7 @@ public:
     HOMEd(const QString &configFile);
 
     inline QString serviceName(void) { return m_serviceName; }
+    inline bool mqttStatus(void) { return m_connected; }
     inline QSettings *getConfig(void) { return m_config; }
 
     void mqttSubscribe(const QString &topic);
@@ -38,6 +39,7 @@ public:
 private:
 
     QString m_serviceName, m_topicPrefix;
+    bool m_connected;
 
     QMqttClient *m_mqtt;
     QElapsedTimer *m_elapsedTimer;
