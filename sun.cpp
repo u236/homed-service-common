@@ -1,18 +1,35 @@
 #include <math.h>
 #include "sun.h"
 
-QTime Sun::sunrise(void)
+void Sun::updateSunrise(void)
 {
-    double t = julianCentury(m_julianDay), n = julianCentury(julianDay(t) + (720 - (m_longitude + degrees(sunriseHourAngle(m_latitude, sunDeclination(t), ANGLE))) * 4 - timeEquation(t)) / 1440);
+    double t = julianCentury(m_julianDay), n = julianCentury(julianDay(t) + (720 - (m_longitude + degrees(sunriseHourAngle(m_latitude, sunDeclination(t), ANGLE))) * 4 - timeEquation(t)) / 1440.0);
     double m = round(720 - (m_longitude + degrees(sunriseHourAngle(m_latitude, sunDeclination(n), ANGLE))) * 4 - timeEquation(n)) + m_offset;
-    return QTime(static_cast <int> (m / 60), static_cast <int> (m) % 60);
+    m_sunrise = QTime(static_cast <int> (m / 60), static_cast <int> (m) % 60);
 }
 
-QTime Sun::sunset(void)
+void Sun::updateSunset(void)
 {
     double t = julianCentury(m_julianDay), n = julianCentury(julianDay(t) + (720 - (m_longitude + degrees(sunsetHourAngle(m_latitude, sunDeclination(t), ANGLE))) * 4 - timeEquation(t)) / 1440.0);
     double m = round(720 - (m_longitude + degrees(sunsetHourAngle(m_latitude, sunDeclination(n), ANGLE))) * 4 - timeEquation(n)) + m_offset;
-    return QTime(static_cast <int> (m / 60), static_cast <int> (m) % 60);
+    m_sunset = QTime(static_cast <int> (m / 60), static_cast <int> (m) % 60);
+}
+
+QTime Sun::fromString(const QString &string)
+{
+    QList <QString> itemList = string.split(QRegExp("[(\\-|\\+)]")), valueList = {"sunrise", "sunset"};
+    QString value = itemList.value(0).toLower().trimmed();
+    qint32 offset = itemList.value(1).toInt();
+
+    if (string.mid(itemList.value(0).length(), 1) == "-")
+        offset *= -1;
+
+    switch (valueList.indexOf(value))
+    {
+        case 0:  return m_sunrise.addSecs(offset * 60);
+        case 1:  return m_sunset.addSecs(offset * 60);
+        default: return QTime::fromString(value, "hh:mm");
+    }
 }
 
 double Sun::radians(double degrees)

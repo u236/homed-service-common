@@ -17,12 +17,18 @@ public:
     inline void setDate(const QDate &value) { m_julianDay = value.toJulianDay(); }
     inline void setOffset(int value) { m_offset = value / 60; }
 
-    QTime sunrise(void);
-    QTime sunset(void);
+    inline QTime sunrise(void) { return m_sunrise; }
+    inline QTime sunset(void) { return m_sunset; }
+
+    void updateSunrise(void);
+    void updateSunset(void);
+
+    QTime fromString(const QString &string);
 
 private:
 
     double m_latitude, m_longitude, m_julianDay, m_offset;
+    QTime m_sunrise, m_sunset;
 
     double radians(double degrees);
     double degrees(double radians);
