@@ -22,10 +22,11 @@ void ExposeObject::registerMetaTypes(void)
     qRegisterMetaType <Sensor::Pressure>            ("pressureExpose");
     qRegisterMetaType <Sensor::Humidity>            ("humidityExpose");
     qRegisterMetaType <Sensor::Moisture>            ("moistureExpose");
+    qRegisterMetaType <Sensor::Illuminance>         ("illuminanceExpose");
     qRegisterMetaType <Sensor::CO2>                 ("co2Expose");
     qRegisterMetaType <Sensor::ECO2>                ("eco2Expose");
     qRegisterMetaType <Sensor::VOC>                 ("vocExpose");
-    qRegisterMetaType <Sensor::Illuminance>         ("illuminanceExpose");
+    qRegisterMetaType <Sensor::Formaldehyde>        ("formaldehydeExpose");
     qRegisterMetaType <Sensor::Frequency>           ("frequencyExpose");
     qRegisterMetaType <Sensor::Voltage>             ("voltageExpose");
     qRegisterMetaType <Sensor::Current>             ("currentExpose");
@@ -65,31 +66,44 @@ QJsonObject BinaryObject::request(void)
 
 QJsonObject SensorObject::request(void)
 {
-    QList <QString> list = {"action", "event", "scene", "count", "position", "co2", "eco2", "voc", "targetDistance"}, valueTemplate = {QString("value_json.%1").arg(m_name)};
+    QList <QString> list = {"action", "event", "scene", "count", "position", "co2", "eco2", "voc", "formaldehyde", "targetDistance"}, valueTemplate = {QString("value_json.%1").arg(m_name)};
+    QMap <QString, QVariant> options = option().toMap();
+    QString unit = options.contains("unit") ? options.value("unit").toString() : m_unit;
+    quint8 round = options.contains("round") ? static_cast <quint8> (options.value("round").toInt()) : m_round;
     QJsonObject json;
 
     switch (list.indexOf(m_name))
     {
-        case 0:  json.insert("icon",                "mdi:gesture-double-tap"); break;
-        case 1:  json.insert("icon",                "mdi:bell"); break;
-        case 2:  json.insert("icon",                "mdi:gesture-tap-button"); break;
-        case 3:  json.insert("icon",                "mdi:counter"); break;
-        case 4:  json.insert("icon",                "mdi:valve"); break;
-        case 5:  json.insert("device_class",        "carbon_dioxide"); break;
-        case 6:  json.insert("device_class",        "carbon_dioxide"); break;
-        case 7:  json.insert("device_class",        "volatile_organic_compounds"); break;
-        case 8:  json.insert("device_class",        "distance"); break;
-        default: json.insert("device_class",        m_name); break;
+        case 0: json.insert("icon",                 "mdi:gesture-double-tap"); break;
+        case 1: json.insert("icon",                 "mdi:bell"); break;
+        case 2: json.insert("icon",                 "mdi:gesture-tap-button"); break;
+        case 3: json.insert("icon",                 "mdi:counter"); break;
+        case 4: json.insert("icon",                 "mdi:valve"); break;
+        case 5: json.insert("device_class",         "carbon_dioxide"); break;
+        case 6: json.insert("device_class",         "carbon_dioxide"); break;
+        case 7: json.insert("device_class",         "volatile_organic_compounds_parts"); break;
+        case 8: json.insert("device_class",         "volatile_organic_compounds"); break;
+        case 9: json.insert("device_class",         "distance"); break;
+
+        default:
+
+            if (!m_custom)
+                json.insert("device_class",         m_name);
+
+            break;
     }
 
     if (m_name == "battery" || option().toString() == "diagnostic")
         json.insert("entity_category",              "diagnostic");
 
-    if (!m_unit.isEmpty() && option().toString() != "raw")
-        json.insert("unit_of_measurement",          m_unit);
+    if (options.contains("icon"))
+        json.insert("icon",                         options.value("icon").toString());
 
-    if (m_round)
-        valueTemplate.append(                       QString("round(%1)").arg(m_round));
+    if (!unit.isEmpty() && option().toString() != "raw")
+        json.insert("unit_of_measurement",          unit);
+
+    if (round)
+        valueTemplate.append(                       QString("round(%1)").arg(round));
 
     json.insert("value_template",                   QString("{{ %1 }}").arg(valueTemplate.join(" | ")));
     json.insert("state_topic",                      m_stateTopic);
@@ -97,7 +111,7 @@ QJsonObject SensorObject::request(void)
     return json;
 }
 
-QJsonObject SelectObject::request(void)
+QJsonObject BooleanObject::request(void)
 {
     QMap <QString, QVariant> options = option().toMap();
     QJsonObject json;
@@ -105,13 +119,16 @@ QJsonObject SelectObject::request(void)
     if (!options.value("control").toBool())
         json.insert("entity_category",              "config");
 
-    json.insert("options",                          QJsonArray::fromStringList(options.value("enum").toStringList()));
-    json.insert("icon",                             options.contains("icon") ? options.value("icon").toString() : "mdi:dip-switch");
+    if (options.contains("icon"))
+        json.insert("icon",                         options.value("icon").toString());
 
     json.insert("value_template",                   QString("{{ value_json.%1 }}").arg(m_name));
+    json.insert("state_on",                         true);
+    json.insert("state_off",                        false);
     json.insert("state_topic",                      m_stateTopic);
 
-    json.insert("command_template",                 QString("{\"%1\":\"{{ value }}\"}").arg(m_name));
+    json.insert("payload_on",                       QString("{\"%1\":true}").arg(m_name));
+    json.insert("payload_off",                      QString("{\"%1\":false}").arg(m_name));
     json.insert("command_topic",                    m_commandTopic);
 
     return json;
@@ -146,7 +163,7 @@ QJsonObject NumberObject::request(void)
     return json;
 }
 
-QJsonObject BooleanObject::request(void)
+QJsonObject SelectObject::request(void)
 {
     QMap <QString, QVariant> options = option().toMap();
     QJsonObject json;
@@ -154,16 +171,13 @@ QJsonObject BooleanObject::request(void)
     if (!options.value("control").toBool())
         json.insert("entity_category",              "config");
 
-    if (options.contains("icon"))
-        json.insert("icon",                         options.value("icon").toString());
+    json.insert("options",                          QJsonArray::fromStringList(options.value("enum").toStringList()));
+    json.insert("icon",                             options.contains("icon") ? options.value("icon").toString() : "mdi:dip-switch");
 
     json.insert("value_template",                   QString("{{ value_json.%1 }}").arg(m_name));
-    json.insert("state_on",                         true);
-    json.insert("state_off",                        false);
     json.insert("state_topic",                      m_stateTopic);
 
-    json.insert("payload_on",                       QString("{\"%1\":true}").arg(m_name));
-    json.insert("payload_off",                      QString("{\"%1\":false}").arg(m_name));
+    json.insert("command_template",                 QString("{\"%1\":\"{{ value }}\"}").arg(m_name));
     json.insert("command_topic",                    m_commandTopic);
 
     return json;

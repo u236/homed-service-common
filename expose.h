@@ -55,22 +55,24 @@ class SensorObject : public ExposeObject
 
 public:
 
-    SensorObject(const QString &name, const QString &unit = QString(), quint8 round = 0) : ExposeObject(name, "sensor"), m_unit(unit), m_round(round) {}
+    SensorObject(const QString &name, const QString &unit, quint8 round) : ExposeObject(name, "sensor"), m_unit(unit), m_round(round), m_custom(false) {}
+    SensorObject(const QString &name, bool custom) : ExposeObject(name, "sensor"), m_round(0), m_custom(custom) {}
     QJsonObject request(void) override;
 
 private:
 
     QString m_unit;
     quint8 m_round;
+    bool m_custom;
 
 };
 
-class SelectObject : public ExposeObject
+class BooleanObject : public ExposeObject
 {
 
 public:
 
-    SelectObject(const QString &name) : ExposeObject(name, "select") {}
+    BooleanObject(const QString &name) : ExposeObject(name, "switch") {}
     QJsonObject request(void) override;
 
 };
@@ -85,12 +87,12 @@ public:
 
 };
 
-class BooleanObject : public ExposeObject
+class SelectObject : public ExposeObject
 {
 
 public:
 
-    BooleanObject(const QString &name) : ExposeObject(name, "switch") {}
+    SelectObject(const QString &name) : ExposeObject(name, "select") {}
     QJsonObject request(void) override;
 
 };
@@ -272,7 +274,7 @@ namespace Sensor
 
     public:
 
-        Illuminance(void) : SensorObject("illuminance", "lx") {}
+        Illuminance(void) : SensorObject("illuminance", "lx", 0) {}
 
     };
 
@@ -281,7 +283,7 @@ namespace Sensor
 
     public:
 
-        CO2(void) : SensorObject("co2", "ppm") {}
+        CO2(void) : SensorObject("co2", "ppm", 0) {}
 
     };
 
@@ -290,7 +292,7 @@ namespace Sensor
 
     public:
 
-        ECO2(void) : SensorObject("eco2", "ppm") {}
+        ECO2(void) : SensorObject("eco2", "ppm", 0) {}
 
     };
 
@@ -299,7 +301,16 @@ namespace Sensor
 
     public:
 
-        VOC(void) : SensorObject("voc", "ppb") {}
+        VOC(void) : SensorObject("voc", "ppb", 0) {}
+
+    };
+
+    class Formaldehyde : public SensorObject
+    {
+
+    public:
+
+        Formaldehyde(void) : SensorObject("formaldehyde", "µg/m³", 0) {}
 
     };
 
@@ -353,7 +364,7 @@ namespace Sensor
 
     public:
 
-        TargetDistance(void) : SensorObject("targetDistance", "m") {}
+        TargetDistance(void) : SensorObject("targetDistance", "m", 1) {}
 
     };
 
@@ -362,7 +373,7 @@ namespace Sensor
 
     public:
 
-        Position(void) : SensorObject("position") {}
+        Position(void) : SensorObject("position", false) {}
 
     };
 
@@ -371,7 +382,7 @@ namespace Sensor
 
     public:
 
-        Action(void) : SensorObject("action") {}
+        Action(void) : SensorObject("action", false) {}
 
     };
 
@@ -380,7 +391,7 @@ namespace Sensor
 
     public:
 
-        Event(void) : SensorObject("event") {}
+        Event(void) : SensorObject("event", false) {}
 
     };
 
@@ -389,7 +400,7 @@ namespace Sensor
 
     public:
 
-        Scene(void) : SensorObject("scene") {}
+        Scene(void) : SensorObject("scene", false) {}
 
     };
 }
