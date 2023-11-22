@@ -278,6 +278,15 @@ namespace Sensor
 
     };
 
+    class ECO2 : public SensorObject
+    {
+
+    public:
+
+        ECO2(void) : SensorObject("eco2", "ppm", 0) {}
+
+    };
+
     class CO2 : public SensorObject
     {
 
@@ -287,12 +296,12 @@ namespace Sensor
 
     };
 
-    class ECO2 : public SensorObject
+    class PM25 : public SensorObject
     {
 
     public:
 
-        ECO2(void) : SensorObject("eco2", "ppm", 0) {}
+        PM25(void) : SensorObject("pm25", "µg/m³", 0) {}
 
     };
 

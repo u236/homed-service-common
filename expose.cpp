@@ -23,8 +23,9 @@ void ExposeObject::registerMetaTypes(void)
     qRegisterMetaType <Sensor::Humidity>            ("humidityExpose");
     qRegisterMetaType <Sensor::Moisture>            ("moistureExpose");
     qRegisterMetaType <Sensor::Illuminance>         ("illuminanceExpose");
-    qRegisterMetaType <Sensor::CO2>                 ("co2Expose");
     qRegisterMetaType <Sensor::ECO2>                ("eco2Expose");
+    qRegisterMetaType <Sensor::CO2>                 ("co2Expose");
+    qRegisterMetaType <Sensor::PM25>                ("pm25Expose");
     qRegisterMetaType <Sensor::VOC>                 ("vocExpose");
     qRegisterMetaType <Sensor::Formaldehyde>        ("formaldehydeExpose");
     qRegisterMetaType <Sensor::Frequency>           ("frequencyExpose");
