@@ -298,6 +298,12 @@ QJsonObject ThermostatObject::request(void)
     QList <QString> operationMode = option("operationMode").toMap().value("enum").toStringList(), systemMode = option("systemMode").toMap().value("enum").toStringList();
     QJsonObject json;
 
+    if (option("heatingStatus").toBool())
+    {
+        json.insert("action_template",              "{{ \"heating\" if value_json.heating else \"off\" }}");
+        json.insert("action_topic",                 m_stateTopic);
+    }
+
     if (!operationMode.isEmpty())
     {
         json.insert("preset_modes",                 QJsonArray::fromStringList(operationMode));
@@ -316,9 +322,6 @@ QJsonObject ThermostatObject::request(void)
 
     json.insert("mode_command_template",            "{\"systemMode\":\"{{ value }}\"}");
     json.insert("mode_command_topic",               m_commandTopic);
-
-    json.insert("action_template",                  "{{ \"heating\" if value_json.heating else \"off\" }}");
-    json.insert("action_topic",                     m_stateTopic);
 
     json.insert("current_temperature_template",     "{{ value_json.temperature }}");
     json.insert("current_temperature_topic",        m_stateTopic);
