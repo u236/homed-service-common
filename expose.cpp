@@ -2,60 +2,31 @@
 
 void ExposeObject::registerMetaTypes(void)
 {
-    qRegisterMetaType <LightObject>                 ("lightExpose");
-    qRegisterMetaType <SwitchObject>                ("switchExpose");
-    qRegisterMetaType <LockObject>                  ("lockExpose");
-    qRegisterMetaType <CoverObject>                 ("coverExpose");
-    qRegisterMetaType <ThermostatObject>            ("thermostatExpose");
-
-    qRegisterMetaType <Binary::Contact>             ("contactExpose");
-    qRegisterMetaType <Binary::BatteryLow>          ("batteryLowExpose");
-    qRegisterMetaType <Binary::Gas>                 ("gasExpose");
-    qRegisterMetaType <Binary::Occupancy>           ("occupancyExpose");
-    qRegisterMetaType <Binary::Smoke>               ("smokeExpose");
-    qRegisterMetaType <Binary::Tamper>              ("tamperExpose");
-    qRegisterMetaType <Binary::WaterLeak>           ("waterLeakExpose");
-    qRegisterMetaType <Binary::Vibration>           ("vibrationExpose");
-
-    qRegisterMetaType <Sensor::Battery>             ("batteryExpose");
-    qRegisterMetaType <Sensor::Temperature>         ("temperatureExpose");
-    qRegisterMetaType <Sensor::Pressure>            ("pressureExpose");
-    qRegisterMetaType <Sensor::Humidity>            ("humidityExpose");
-    qRegisterMetaType <Sensor::Moisture>            ("moistureExpose");
-    qRegisterMetaType <Sensor::Illuminance>         ("illuminanceExpose");
-    qRegisterMetaType <Sensor::ECO2>                ("eco2Expose");
-    qRegisterMetaType <Sensor::CO2>                 ("co2Expose");
-    qRegisterMetaType <Sensor::PM25>                ("pm25Expose");
-    qRegisterMetaType <Sensor::VOC>                 ("vocExpose");
-    qRegisterMetaType <Sensor::Formaldehyde>        ("formaldehydeExpose");
-    qRegisterMetaType <Sensor::Frequency>           ("frequencyExpose");
-    qRegisterMetaType <Sensor::Voltage>             ("voltageExpose");
-    qRegisterMetaType <Sensor::Current>             ("currentExpose");
-    qRegisterMetaType <Sensor::Power>               ("powerExpose");
-    qRegisterMetaType <Sensor::Energy>              ("energyExpose");
-    qRegisterMetaType <Sensor::TargetDistance>      ("targetDistanceExpose");
-    qRegisterMetaType <Sensor::Position>            ("positionExpose");
-    qRegisterMetaType <Sensor::Action>              ("actionExpose");
-    qRegisterMetaType <Sensor::Event>               ("eventExpose");
-    qRegisterMetaType <Sensor::Scene>               ("sceneExpose");
+    qRegisterMetaType <BinaryObject>        ("binaryExpose");
+    qRegisterMetaType <SensorObject>        ("sensorExpose");
+    qRegisterMetaType <ToggleObject>        ("toggleExpose");
+    qRegisterMetaType <NumberObject>        ("numberExpose");
+    qRegisterMetaType <SelectObject>        ("selectExpose");
+    qRegisterMetaType <LightObject>         ("lightExpose");
+    qRegisterMetaType <SwitchObject>        ("switchExpose");
+    qRegisterMetaType <LockObject>          ("lockExpose");
+    qRegisterMetaType <CoverObject>         ("coverExpose");
+    qRegisterMetaType <ThermostatObject>    ("thermostatExpose");
 }
 
 QJsonObject BinaryObject::request(void)
 {
-    QList <QString> list = {"alarm", "contact", "batteryLow", "waterLeak"};
+    QMap <QString, QVariant> options = option().toMap();
     QJsonObject json;
 
-    switch (list.indexOf(m_name))
-    {
-        case 0:  break;
-        case 1:  json.insert("device_class",        option().toString() == "window" ? "window" : "door"); break;
-        case 2:  json.insert("device_class",        "battery"); break;
-        case 3:  json.insert("device_class",        "moisture"); break;
-        default: json.insert("device_class",        m_name); break;
-    }
-
-    if (option().toString() == "diagnostic" || m_name == "batteryLow" || m_name == "tamper")
+    if (m_name == "batteryLow" || m_name == "tamper" || options.value("diagnostic").toBool())
         json.insert("entity_category",              "diagnostic");
+
+    if (options.contains("class"))
+        json.insert("device_class",                 options.value("class").toString());
+
+    if (options.contains("icon"))
+        json.insert("icon",                         options.value("icon").toString());
 
     json.insert("value_template",                   QString("{{ value_json.%1 }}").arg(m_name));
     json.insert("payload_on",                       true);
@@ -67,44 +38,24 @@ QJsonObject BinaryObject::request(void)
 
 QJsonObject SensorObject::request(void)
 {
-    QList <QString> list = {"action", "event", "scene", "count", "position", "co2", "eco2", "voc", "formaldehyde", "targetDistance"}, valueTemplate = {QString("value_json.%1").arg(m_name)};
     QMap <QString, QVariant> options = option().toMap();
-    QString unit = options.contains("unit") ? options.value("unit").toString() : m_unit;
-    quint8 round = options.contains("round") ? static_cast <quint8> (options.value("round").toInt()) : m_round;
+    QList <QString> valueTemplate = {QString("value_json.%1").arg(m_name)};
     QJsonObject json;
 
-    switch (list.indexOf(m_name))
-    {
-        case 0: json.insert("icon",                 "mdi:gesture-double-tap"); break;
-        case 1: json.insert("icon",                 "mdi:bell"); break;
-        case 2: json.insert("icon",                 "mdi:gesture-tap-button"); break;
-        case 3: json.insert("icon",                 "mdi:counter"); break;
-        case 4: json.insert("icon",                 "mdi:valve"); break;
-        case 5: json.insert("device_class",         "carbon_dioxide"); break;
-        case 6: json.insert("device_class",         "carbon_dioxide"); break;
-        case 7: json.insert("device_class",         "volatile_organic_compounds_parts"); break;
-        case 8: json.insert("device_class",         "volatile_organic_compounds"); break;
-        case 9: json.insert("device_class",         "distance"); break;
-
-        default:
-
-            if (!m_custom)
-                json.insert("device_class",         m_name);
-
-            break;
-    }
-
-    if (m_name == "battery" || option().toString() == "diagnostic")
+    if (m_name == "battery" || options.value("diagnostic").toBool())
         json.insert("entity_category",              "diagnostic");
+
+    if (options.contains("class"))
+        json.insert("device_class",                 options.value("class").toString());
+
+    if (options.contains("unit") && !options.value("raw").toBool())
+        json.insert("unit_of_measurement",          options.value("unit").toString());
+
+    if (options.contains("round"))
+        valueTemplate.append(                       QString("round(%1)").arg(options.value("round").toInt()));
 
     if (options.contains("icon"))
         json.insert("icon",                         options.value("icon").toString());
-
-    if (!unit.isEmpty() && option().toString() != "raw")
-        json.insert("unit_of_measurement",          unit);
-
-    if (round)
-        valueTemplate.append(                       QString("round(%1)").arg(round));
 
     json.insert("value_template",                   QString("{{ %1 }}").arg(valueTemplate.join(" | ")));
     json.insert("state_topic",                      m_stateTopic);
@@ -112,7 +63,7 @@ QJsonObject SensorObject::request(void)
     return json;
 }
 
-QJsonObject BooleanObject::request(void)
+QJsonObject ToggleObject::request(void)
 {
     QMap <QString, QVariant> options = option().toMap();
     QJsonObject json;
@@ -143,8 +94,11 @@ QJsonObject NumberObject::request(void)
     if (!options.value("control").toBool())
         json.insert("entity_category",              "config");
 
-    if (options.contains("icon"))
-        json.insert("icon",                         options.value("icon").toString());
+    if (options.contains("min"))
+        json.insert("min",                          options.value("min").toDouble());
+
+    if (options.contains("max"))
+        json.insert("max",                          options.value("max").toDouble());
 
     if (options.contains("step"))
         json.insert("step",                         options.value("step").toDouble());
@@ -152,8 +106,8 @@ QJsonObject NumberObject::request(void)
     if (options.contains("unit"))
         json.insert("unit_of_measurement",          options.value("unit").toString());
 
-    json.insert("min",                              options.value("min").toDouble());
-    json.insert("max",                              options.value("max").toDouble());
+    if (options.contains("icon"))
+        json.insert("icon",                         options.value("icon").toString());
 
     json.insert("value_template",                   QString("{{ value_json.%1 }}").arg(m_name));
     json.insert("state_topic",                      m_stateTopic);
@@ -172,8 +126,10 @@ QJsonObject SelectObject::request(void)
     if (!options.value("control").toBool())
         json.insert("entity_category",              "config");
 
+    if (options.contains("icon"))
+        json.insert("icon",                         options.value("icon").toString());
+
     json.insert("options",                          QJsonArray::fromStringList(options.value("enum").toStringList()));
-    json.insert("icon",                             options.contains("icon") ? options.value("icon").toString() : "mdi:dip-switch");
 
     json.insert("value_template",                   QString("{{ value_json.%1 }}").arg(m_name));
     json.insert("state_topic",                      m_stateTopic);

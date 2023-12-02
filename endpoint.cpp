@@ -62,7 +62,7 @@ void AbstractDeviceObject::publishExposes(HOMEd *controller, const QString &addr
 
                 if (expose->name() == "action" || expose->name() == "event" || expose->name() == "scene")
                 {
-                    QList <QString> list = expose->name() != "scene" ? option.toStringList() : QVariant(option.toMap().values()).toStringList();
+                    QList <QString> list = expose->name() != "scene" ? option.toStringList() : QVariant(option.toMap().value("name").toMap().values()).toStringList();
 
                     for (int i = 0; i < list.count(); i++)
                     {
