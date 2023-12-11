@@ -1,0 +1,78 @@
+.build:
+  stage: build
+  script:
+  - "export PATH=\"${PATH}:/opt/gcc/${COMPILER}/bin\""
+  - "export STAGING_DIR=\"/opt/gcc/${COMPILER}\""
+  - "/opt/qt/${QT_BUILD}/bin/qmake ${NAME}.pro"
+  - "make -j $(nproc)"
+  - "cp ${NAME} ${NAME}-${ARCHITECTURE}"
+  - "cp ${NAME}-${ARCHITECTURE} /var/www/sandbox.u236.org/${NAME}"
+  artifacts:
+    paths:
+    - "${NAME}-*"
+    expire_in: 1 day
+  rules:
+  - if: $CI_COMMIT_TAG =~ /^\d.\d.\d+$/ || $CI_COMMIT_TAG == "dev"
+    when: always
+  - when: never
+
+Build Linux Binary (amd64):
+  extends: .build
+  variables:
+    ARCHITECTURE: amd64
+    QT_BUILD: qt-amd64-linux-5.15.4-shared
+  script:
+  - "docker run --rm -u ${UID}:${UID} -v /opt/qt/${QT_BUILD}:/opt/qt/${QT_BUILD} -v ${PWD}/..:/build -w /build/${NAME} gcc:8.3.0 bash -c \"/opt/qt/${QT_BUILD}/bin/qmake ${NAME}.pro; make -j $(nproc)\""
+  - "cp ${NAME} ${NAME}-amd64"
+  - "cp ${NAME}-amd64 /var/www/sandbox.u236.org/${NAME}"
+
+Build Linux Binary (aarch64):
+  extends: .build
+  variables:
+    ARCHITECTURE: aarch64
+    QT_BUILD: qt-aarch64-linux-gnu-5.15.4-shared
+    COMPILER: gcc-aarch64-linux-gnu-8.3.0
+  after_script:
+  - "cp ${NAME}-aarch64 ${NAME}-arm64"
+
+Build Linux Binary (armhf):
+  extends: .build
+  variables:
+    ARCHITECTURE: armhf
+    QT_BUILD: qt-arm-linux-gnueabihf-5.15.4-shared
+    COMPILER: gcc-arm-linux-gnueabihf-8.3.0
+
+Build OpenWRT Binary (aarch64_generic):
+  extends: .build
+  variables:
+    ARCHITECTURE: aarch64_generic
+    QT_BUILD: qt-aarch64_generic-openwrt-linux-5.15.4-shared
+    COMPILER: gcc-aarch64_generic-openwrt-linux-8.4.0-musl
+
+Build OpenWRT Binary (arm_cortex-a7_neon-vfpv4):
+  extends: .build
+  variables:
+    ARCHITECTURE: arm_cortex-a7_neon-vfpv4
+    QT_BUILD: qt-arm_cortex-a7_neon-vfpv4-openwrt-linux-5.15.4-shared
+    COMPILER: gcc-arm_cortex-a7_neon-vfpv4-openwrt-linux-8.4.0-musl
+
+Build OpenWRT Binary (arm_cortex-a9_neon):
+  extends: .build
+  variables:
+    ARCHITECTURE: arm_cortex-a9_neon
+    QT_BUILD: qt-arm_cortex-a9_neon-openwrt-linux-5.15.4-shared
+    COMPILER: gcc-arm_cortex-a9_neon-openwrt-linux-8.4.0-musl
+
+Build OpenWRT Binary (mips_24kc):
+  extends: .build
+  variables:
+    ARCHITECTURE: mips_24kc
+    QT_BUILD: qt-mips_24kc-openwrt-linux-5.15.4-shared
+    COMPILER: gcc-mips_24kc-openwrt-linux-8.4.0-musl
+
+Build OpenWRT Binary (mipsel_24kc):
+  extends: .build
+  variables:
+    ARCHITECTURE: mipsel_24kc
+    QT_BUILD: qt-mipsel_24kc-openwrt-linux-5.15.4-shared
+    COMPILER: gcc-mipsel_24kc-openwrt-linux-8.4.0-musl
