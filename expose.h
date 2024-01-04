@@ -90,6 +90,16 @@ public:
 
 };
 
+class ButtonObject : public ExposeObject
+{
+
+public:
+
+    ButtonObject(const QString &name = "button") : ExposeObject(name, "button") {}
+    QJsonObject request(void) override;
+
+};
+
 class LightObject : public ExposeObject
 {
 

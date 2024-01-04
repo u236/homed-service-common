@@ -7,6 +7,7 @@ void ExposeObject::registerMetaTypes(void)
     qRegisterMetaType <ToggleObject>        ("toggleExpose");
     qRegisterMetaType <NumberObject>        ("numberExpose");
     qRegisterMetaType <SelectObject>        ("selectExpose");
+    qRegisterMetaType <ButtonObject>        ("buttonExpose");
     qRegisterMetaType <LightObject>         ("lightExpose");
     qRegisterMetaType <SwitchObject>        ("switchExpose");
     qRegisterMetaType <LockObject>          ("lockExpose");
@@ -135,6 +136,23 @@ QJsonObject SelectObject::request(void)
     json.insert("state_topic",                      m_stateTopic);
 
     json.insert("command_template",                 QString("{\"%1\":\"{{ value }}\"}").arg(m_name));
+    json.insert("command_topic",                    m_commandTopic);
+
+    return json;
+}
+
+QJsonObject ButtonObject::request(void)
+{
+    QMap <QString, QVariant> options = option().toMap();
+    QJsonObject json;
+
+    if (!options.value("control").toBool())
+        json.insert("entity_category",              "config");
+
+    if (options.contains("icon"))
+        json.insert("icon",                         options.value("icon").toString());
+
+    json.insert("payload_press",                    QString("{\"%1\":true}").arg(m_name));
     json.insert("command_topic",                    m_commandTopic);
 
     return json;
