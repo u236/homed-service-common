@@ -29,6 +29,7 @@ QJsonObject BinaryObject::request(void)
     if (options.contains("icon"))
         json.insert("icon",                         options.value("icon").toString());
 
+    json.insert("force_update",                     true);
     json.insert("value_template",                   QString("{{ value_json.%1 }}").arg(m_name));
     json.insert("payload_on",                       true);
     json.insert("payload_off",                      false);
@@ -58,6 +59,7 @@ QJsonObject SensorObject::request(void)
     if (options.contains("icon"))
         json.insert("icon",                         options.value("icon").toString());
 
+    json.insert("force_update",                     true);
     json.insert("value_template",                   QString("{{ %1 }}").arg(valueTemplate.join(" | ")));
     json.insert("state_topic",                      m_stateTopic);
 
