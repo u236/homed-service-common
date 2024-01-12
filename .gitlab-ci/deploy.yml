@@ -65,7 +65,6 @@
 Deploy Docker Images:
   stage: deploy
   script:
-  - "echo ${DOCKER_EXTRA}"
   - "[[ -n ${DOCKER_EXTRA} ]] && sh -c \"${DOCKER_EXTRA}\""
   - "cp ${NAME}-amd64 deploy/docker/${NAME}-amd64"
   - "cp ${NAME}-aarch64 deploy/docker/${NAME}-arm64"
