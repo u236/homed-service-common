@@ -8,10 +8,10 @@ void ExposeObject::registerMetaTypes(void)
     qRegisterMetaType <NumberObject>        ("numberExpose");
     qRegisterMetaType <SelectObject>        ("selectExpose");
     qRegisterMetaType <ButtonObject>        ("buttonExpose");
-    qRegisterMetaType <LightObject>         ("lightExpose");
     qRegisterMetaType <SwitchObject>        ("switchExpose");
-    qRegisterMetaType <LockObject>          ("lockExpose");
+    qRegisterMetaType <LightObject>         ("lightExpose");
     qRegisterMetaType <CoverObject>         ("coverExpose");
+    qRegisterMetaType <LockObject>          ("lockExpose");
     qRegisterMetaType <ThermostatObject>    ("thermostatExpose");
 }
 
@@ -160,6 +160,25 @@ QJsonObject ButtonObject::request(void)
     return json;
 }
 
+QJsonObject SwitchObject::request(void)
+{
+    QString name = QString(m_name).replace("switch", "status");
+    QJsonObject json;
+
+    json.insert("device_class",                     option().toString() == "outlet" ? "outlet" : "switch");
+
+    json.insert("value_template",                   QString("{{ value_json.%1 }}").arg(name));
+    json.insert("state_on",                         "on");
+    json.insert("state_off",                        "off");
+    json.insert("state_topic",                      m_stateTopic);
+
+    json.insert("payload_on",                       QString("{\"%1\":\"on\"}").arg(name));
+    json.insert("payload_off",                      QString("{\"%1\":\"off\"}").arg(name));
+    json.insert("command_topic",                    m_commandTopic);
+
+    return json;
+}
+
 QJsonObject LightObject::request(void)
 {
     QList <QString> options = option().toStringList();
@@ -206,44 +225,6 @@ QJsonObject LightObject::request(void)
     return json;
 }
 
-QJsonObject SwitchObject::request(void)
-{
-    QString name = QString(m_name).replace("switch", "status");
-    QJsonObject json;
-
-    json.insert("device_class",                     option().toString() == "outlet" ? "outlet" : "switch");
-
-    json.insert("value_template",                   QString("{{ value_json.%1 }}").arg(name));
-    json.insert("state_on",                         "on");
-    json.insert("state_off",                        "off");
-    json.insert("state_topic",                      m_stateTopic);
-
-    json.insert("payload_on",                       QString("{\"%1\":\"on\"}").arg(name));
-    json.insert("payload_off",                      QString("{\"%1\":\"off\"}").arg(name));
-    json.insert("command_topic",                    m_commandTopic);
-
-    return json;
-}
-
-QJsonObject LockObject::request(void)
-{
-    QJsonObject json;
-
-    if (option().toString() == "valve")
-        json.insert("icon",                         "mdi:pipe-valve");
-
-    json.insert("value_template",                   "{{ value_json.status }}");
-    json.insert("state_locked",                     "off");
-    json.insert("state_unlocked",                   "on");
-    json.insert("state_topic",                      m_stateTopic);
-
-    json.insert("payload_lock",                     "{\"status\":\"off\"}");
-    json.insert("payload_unlock",                   "{\"status\":\"on\"}");
-    json.insert("command_topic",                    m_commandTopic);
-
-    return json;
-}
-
 QJsonObject CoverObject::request(void)
 {
     QJsonObject json;
@@ -269,9 +250,29 @@ QJsonObject CoverObject::request(void)
     return json;
 }
 
+QJsonObject LockObject::request(void)
+{
+    QJsonObject json;
+
+    if (option().toString() == "valve")
+        json.insert("icon",                         "mdi:pipe-valve");
+
+    json.insert("value_template",                   "{{ value_json.status }}");
+    json.insert("state_locked",                     "off");
+    json.insert("state_unlocked",                   "on");
+    json.insert("state_topic",                      m_stateTopic);
+
+    json.insert("payload_lock",                     "{\"status\":\"off\"}");
+    json.insert("payload_unlock",                   "{\"status\":\"on\"}");
+    json.insert("command_topic",                    m_commandTopic);
+
+    return json;
+}
+
 QJsonObject ThermostatObject::request(void)
 {
     QList <QString> operationMode = option("operationMode").toMap().value("enum").toStringList(), systemMode = option("systemMode").toMap().value("enum").toStringList();
+    QMap <QString, QVariant> targetTemperature = option("targetTemperature").toMap();
     QJsonObject json;
 
     if (option("heatingStatus").toBool())
@@ -290,6 +291,15 @@ QJsonObject ThermostatObject::request(void)
         json.insert("preset_mode_command_template", "{\"operationMode\":\"{{ value }}\"}");
         json.insert("preset_mode_command_topic",    m_commandTopic);
     }
+
+    if (targetTemperature.contains("min"))
+        json.insert("min_temp",                     targetTemperature.value("min").toDouble());
+
+    if (targetTemperature.contains("max"))
+        json.insert("max_temp",                     targetTemperature.value("max").toDouble());
+
+    if (targetTemperature.contains("step"))
+        json.insert("temp_step",                    targetTemperature.value("step").toDouble());
 
     json.insert("modes",                            systemMode.isEmpty() ? QJsonArray {"heat"} : QJsonArray::fromStringList(systemMode));
 

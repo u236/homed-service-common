@@ -100,16 +100,6 @@ public:
 
 };
 
-class LightObject : public ExposeObject
-{
-
-public:
-
-    LightObject(void) : ExposeObject("light", "light") {}
-    QJsonObject request(void) override;
-
-};
-
 class SwitchObject : public ExposeObject
 {
 
@@ -120,12 +110,12 @@ public:
 
 };
 
-class LockObject : public ExposeObject
+class LightObject : public ExposeObject
 {
 
 public:
 
-    LockObject(void) : ExposeObject("lock", "lock") {}
+    LightObject(void) : ExposeObject("light", "light") {}
     QJsonObject request(void) override;
 
 };
@@ -136,6 +126,16 @@ class CoverObject : public ExposeObject
 public:
 
     CoverObject(void) : ExposeObject("cover", "cover") {}
+    QJsonObject request(void) override;
+
+};
+
+class LockObject : public ExposeObject
+{
+
+public:
+
+    LockObject(void) : ExposeObject("lock", "lock") {}
     QJsonObject request(void) override;
 
 };
