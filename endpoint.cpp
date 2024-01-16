@@ -29,7 +29,7 @@ void AbstractDeviceObject::publishExposes(HOMEd *controller, const QString &addr
                     object.append(id);
                 }
 
-                if (!remove)
+                if (m_discovery && !remove)
                 {
                     QString name = expose->name();
 
@@ -68,9 +68,9 @@ void AbstractDeviceObject::publishExposes(HOMEd *controller, const QString &addr
                     {
                         QString subtype = list.at(i);
                         QList <QString> event = {subtype};
-                        QJsonObject item;
 
                         subtype.replace(QRegExp("([A-Z])"), " \\1").replace(0, 1, subtype.at(0).toUpper());
+                        json = QJsonObject();
 
                         if (!id.isEmpty())
                         {
@@ -82,18 +82,18 @@ void AbstractDeviceObject::publishExposes(HOMEd *controller, const QString &addr
                             event.append(id);
                         }
 
-                        if (!remove)
+                        if (m_discovery && !remove)
                         {
-                            item.insert("automation_type", "trigger");
-                            item.insert("device", identity);
-                            item.insert("payload", event.at(0));
-                            item.insert("subtype", subtype);
-                            item.insert("topic", controller->mqttTopic("fd/%1/%2").arg(controller->serviceName(), topic));
-                            item.insert("type", expose->name());
-                            item.insert("value_template", QString("{{ value_json.%1 }}").arg(expose->name()));
+                            json.insert("automation_type", "trigger");
+                            json.insert("device", identity);
+                            json.insert("payload", event.at(0));
+                            json.insert("subtype", subtype);
+                            json.insert("topic", controller->mqttTopic("fd/%1/%2").arg(controller->serviceName(), topic));
+                            json.insert("type", expose->name());
+                            json.insert("value_template", QString("{{ value_json.%1 }}").arg(expose->name()));
                         }
 
-                        controller->mqttPublish(QString("%1/device_automation/%2/%3/config").arg(prefix, uniqueId, event.join('_')), item, true);
+                        controller->mqttPublish(QString("%1/device_automation/%2/%3/config").arg(prefix, uniqueId, event.join('_')), json, true);
                     }
                 }
             }

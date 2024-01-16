@@ -52,7 +52,7 @@ class AbstractDeviceObject : public QObject
 public:
 
     AbstractDeviceObject(const QString &name) :
-        QObject(nullptr), m_version(0), m_name(name), m_availability(Availability::Unknown) {}
+        QObject(nullptr), m_version(0), m_name(name), m_active(true), m_discovery(true), m_cloud(true), m_availability(Availability::Unknown) {}
 
     inline quint8 version(void) { return m_version; }
     inline void setVersion(quint8 value) { m_version = value; }
@@ -69,6 +69,15 @@ public:
     inline QString description(void) { return m_description; }
     inline void setDescription(const QString &value) { m_description = value; }
 
+    inline bool active(void) { return m_active; }
+    inline void setActive(bool value) { m_active = value; }
+
+    inline bool discovery(void) { return m_discovery; }
+    inline void setDiscovery(bool value) { m_discovery = value; }
+
+    inline bool cloud(void) { return m_cloud; }
+    inline void setCloud(bool value) { m_cloud = value; }
+
     inline Availability availability(void) { return m_availability; }
     inline void setAvailability(Availability value) { m_availability = value; }
 
@@ -81,6 +90,7 @@ protected:
 
     quint8 m_version;
     QString m_name, m_manufacturerName, m_modelName, m_description;
+    bool m_active, m_discovery, m_cloud;
 
     Availability m_availability;
 
