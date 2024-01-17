@@ -41,7 +41,7 @@ QJsonObject BinaryObject::request(void)
 QJsonObject SensorObject::request(void)
 {
     QMap <QString, QVariant> options = option().toMap();
-    QList <QString> valueTemplate = {QString("value_json.%1").arg(m_name)};
+    QList <QString> valueTemplate = {QString("value_json.%1").arg(m_name)}, forceUpdate = {"action", "event", "scene"};
     QJsonObject json;
 
     if (m_name == "battery" || options.value("diagnostic").toBool())
@@ -59,7 +59,9 @@ QJsonObject SensorObject::request(void)
     if (options.contains("icon"))
         json.insert("icon",                         options.value("icon").toString());
 
-    json.insert("force_update",                     true);
+    if (forceUpdate.contains(m_name))
+        json.insert("force_update",                 true);
+
     json.insert("value_template",                   QString("{{ %1 }}").arg(valueTemplate.join(" | ")));
     json.insert("state_topic",                      m_stateTopic);
 

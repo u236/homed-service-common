@@ -6,6 +6,7 @@ void AbstractDeviceObject::publishExposes(HOMEd *controller, const QString &addr
     bool names = controller->getConfig()->value("mqtt/names", false).toBool(), legacy = controller->getConfig()->value("homeassistant/legacy", true).toBool();
     QString prefix = controller->getConfig()->value("homeassistant/prefix", "homeassistant").toString();
     QMap <QString, QVariant> data, endpointName = m_options.value("endpointName").toMap();
+    QList <QString> trigger = {"action", "event", "scene"};
 
     for (auto it = m_endpoints.begin(); it != m_endpoints.end(); it++)
     {
@@ -60,7 +61,7 @@ void AbstractDeviceObject::publishExposes(HOMEd *controller, const QString &addr
 
                 controller->mqttPublish(QString("%1/%2/%3/%4/config").arg(prefix, expose->component(), uniqueId, object.join('_')), json, true);
 
-                if (expose->name() == "action" || expose->name() == "event" || expose->name() == "scene")
+                if (trigger.contains(expose->name()))
                 {
                     QList <QString> list = expose->name() != "scene" ? option.toMap().value("trigger").toStringList() : QVariant(option.toMap().value("name").toMap().values()).toStringList();
 
