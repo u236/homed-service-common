@@ -212,7 +212,7 @@ QJsonObject LightObject::request(void)
         commandOnTemplate.append(                   "{% if color_temp is defined %},\"colorTemperature\":{{ color_temp }}{% endif %}");
 
         json.insert("color_temp_template",          "{{ value_json.colorTemperature }}");
-        json.insert("min_mireds",                   colorTemperature.value("min", 150).toInt());
+        json.insert("min_mireds",                   colorTemperature.value("min", 153).toInt());
         json.insert("max_mireds",                   colorTemperature.value("max", 500).toInt());
     }
 

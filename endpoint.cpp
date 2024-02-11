@@ -111,9 +111,7 @@ void AbstractDeviceObject::publishExposes(HOMEd *controller, const QString &addr
                 if (expose->name() == "light" && option.toStringList().contains("colorTemperature"))
                 {
                     QVariant colorTemperature = expose->option("colorTemperature");
-
-                    if (colorTemperature.isValid())
-                        options.insert("colorTemperature", colorTemperature);
+                    options.insert("colorTemperature", colorTemperature.isValid() ? colorTemperature : QMap <QString, QVariant> {{"min", 153}, {"max", 500}});
                 }
 
                 if (expose->name() == "thermostat")
