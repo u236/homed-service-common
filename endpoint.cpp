@@ -3,9 +3,10 @@
 
 void AbstractDeviceObject::publishExposes(HOMEd *controller, const QString &address, const QString uniqueId, bool remove)
 {
-    bool names = controller->getConfig()->value("mqtt/names", false).toBool(), legacy = controller->getConfig()->value("homeassistant/legacy", true).toBool();
+    bool names = controller->getConfig()->value("mqtt/names", false).toBool(), homeassistant = controller->getConfig()->value("homeassistant/enabled", false).toBool();
     QString prefix = controller->getConfig()->value("homeassistant/prefix", "homeassistant").toString();
     QMap <QString, QVariant> data, endpointName = m_options.value("endpointName").toMap();
+    QMap <QString, QString> abbreviation = {{"co2", "CO2"}, {"eco2", "eCO2"}, {"pm1", "PM1"}, {"pm10", "PM10"}, {"pm25", "PM2.5"}, {"voc", "VOC"}};
     QList <QString> trigger = {"action", "event", "scene"};
 
     for (auto it = m_endpoints.begin(); it != m_endpoints.end(); it++)
@@ -17,7 +18,7 @@ void AbstractDeviceObject::publishExposes(HOMEd *controller, const QString &addr
             const Expose &expose = endpoint->exposes().at(i);
             QVariant option = expose->option();
 
-            if (controller->getConfig()->value("homeassistant/enabled", false).toBool() && expose->homeassistant())
+            if (homeassistant && expose->homeassistant())
             {
                 QString id = expose->multiple() ? QString::number(it.key()) : QString(), topic = names ? m_name : address;
                 QList <QString> object = {expose->name()};
@@ -34,7 +35,7 @@ void AbstractDeviceObject::publishExposes(HOMEd *controller, const QString &addr
                 {
                     QString name = expose->name();
 
-                    name.replace(QRegExp("([A-Z0-9])"), " \\1").replace(0, 1, name.at(0).toUpper());
+                    name = abbreviation.contains(name) ? abbreviation.value(name) : name.replace(QRegExp("([A-Z0-9])"), " \\1").replace(0, 1, name.at(0).toUpper());
 
                     if (!id.isEmpty())
                         name.append(" ").append(endpointName.contains(id) ? endpointName.value(id).toString() : id);
@@ -54,8 +55,7 @@ void AbstractDeviceObject::publishExposes(HOMEd *controller, const QString &addr
                     json.insert("availability", availability);
                     json.insert("availability_mode", "all");
                     json.insert("device", identity);
-                    json.insert("has_entity_name", legacy ? false : true);
-                    json.insert("name", legacy ? QString("%1 %2").arg(m_name, name) : name);
+                    json.insert("name", name);
                     json.insert("unique_id", QString("%1_%2").arg(uniqueId, object.join('_')));
                 }
 
