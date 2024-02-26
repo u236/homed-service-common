@@ -16,7 +16,7 @@ HOMEd::HOMEd(const QString &configFile) : QObject(nullptr), m_connected(false), 
     setLogFile(m_config->value("log/file", "/var/log/homed.log").toString());
     qInstallMessageHandler(logger);
 
-    if (date > QDate(date.year(), 12, 23) && date < QDate(date.year() + 1, 1, 15))
+    if (date > QDate(date.year(), 12, 23) || date < QDate(date.year(), 1, 15))
         logInfo << "Merry Christmas and a Happy New Year!" << "\xF0\x9F\x8E\x81\xF0\x9F\x8E\x84\xF0\x9F\x8D\xBA";
 
     m_serviceName = QCoreApplication::applicationName().split("-").last();
@@ -30,12 +30,12 @@ HOMEd::HOMEd(const QString &configFile) : QObject(nullptr), m_connected(false), 
     m_mqtt->setWillTopic(mqttTopic("service/%1").arg(m_serviceName));
     m_mqtt->setWillMessage(QJsonDocument(QJsonObject {{"status", "offline"}}).toJson(QJsonDocument::Compact));
 
-    connect(m_mqtt, &QMqttClient::connected, this, &HOMEd::publishStatus, Qt::QueuedConnection);
+    connect(m_mqtt, &QMqttClient::connected, this, &HOMEd::connected, Qt::QueuedConnection);
+    connect(m_mqtt, &QMqttClient::disconnected, this, &HOMEd::disconnected, Qt::QueuedConnection);
     connect(m_mqtt, &QMqttClient::messageReceived, this, &HOMEd::mqttReceived, Qt::QueuedConnection);
-    connect(m_mqtt, &QMqttClient::disconnected, this, &HOMEd::mqttDisconnected, Qt::QueuedConnection);
 
-    connect(m_reconnectTimer, &QTimer::timeout, this, &HOMEd::mqttReconnect, Qt::QueuedConnection);
-    connect(m_watcher, &QFileSystemWatcher::fileChanged, this, &HOMEd::configChanged, Qt::QueuedConnection);
+    connect(m_reconnectTimer, &QTimer::timeout, this, &HOMEd::reconnect, Qt::QueuedConnection);
+    connect(m_watcher, &QFileSystemWatcher::fileChanged, this, &HOMEd::fileChanged, Qt::QueuedConnection);
 
     m_mqtt->connectToHost();
     m_elapsedTimer->start();
@@ -46,7 +46,7 @@ void HOMEd::quit(void)
 {
     logInfo << "Goodbye!";
 
-    mqttPublish(mqttTopic("service/%1").arg(m_serviceName), {{"status", "offline"}}, true);
+    mqttPublishStatus(false);
     m_mqtt->disconnectFromHost();
 
     delete m_elapsedTimer;
@@ -72,31 +72,36 @@ void HOMEd::mqttPublishString(const QString &topic, const QString &message, bool
     m_mqtt->publish(topic, message.toUtf8(), MQTT_DEFAULT_QOS, retain);
 }
 
+void HOMEd::mqttPublishStatus(bool online)
+{
+    mqttPublish(mqttTopic("service/%1").arg(m_serviceName), {{"status", online ? "online" : "offline"}}, true);
+}
+
 QString HOMEd::mqttTopic(const QString &topic)
 {
     return QString("%1/%2").arg(m_topicPrefix, topic);
 }
 
-void HOMEd::publishStatus(void)
+void HOMEd::connected(void)
 {
     m_connected = true;
-    mqttPublish(mqttTopic("service/%1").arg(m_serviceName), {{"status", "online"}}, true);
+    logInfo << "MQTT connected";
     mqttConnected();
 }
 
-void HOMEd::mqttDisconnected(void)
+void HOMEd::disconnected(void)
 {
     m_connected = false;
     logWarning << "MQTT disconnected";
     m_reconnectTimer->start(MQTT_RECONNECT_INTERVAL);
 }
 
-void HOMEd::mqttReconnect(void)
+void HOMEd::reconnect(void)
 {
     m_mqtt->connectToHost();
 }
 
-void HOMEd::configChanged(void)
+void HOMEd::fileChanged(void)
 {
     logWarning << "Configuration file changed, restarting...";
     QCoreApplication::exit(EXIT_RESTART);

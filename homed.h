@@ -33,6 +33,7 @@ public:
 
     void mqttPublish(const QString &topic, const QJsonObject &json, bool retain = false);
     void mqttPublishString(const QString &topic, const QString &message, bool retain = false);
+    void mqttPublishStatus(bool online = true);
 
     QString mqttTopic(const QString &topic = QString());
 
@@ -57,10 +58,10 @@ private slots:
     virtual void mqttConnected(void) = 0;
     virtual void mqttReceived(const QByteArray &message, const QMqttTopicName &topic) = 0;
 
-    void publishStatus(void);
-    void mqttDisconnected(void);
-    void mqttReconnect(void);
-    void configChanged(void);
+    void connected(void);
+    void disconnected(void);
+    void reconnect(void);
+    void fileChanged(void);
 
 };
 
