@@ -1,10 +1,8 @@
 #include "endpoint.h"
 #include "expose.h"
 
-void AbstractDeviceObject::publishExposes(HOMEd *controller, const QString &address, const QString uniqueId, bool remove)
+void AbstractDeviceObject::publishExposes(HOMEd *controller, const QString &address, const QString uniqueId, const QString haPrefix, bool haEnabled, bool names, bool remove)
 {
-    bool names = controller->getConfig()->value("mqtt/names", false).toBool(), homeassistant = controller->getConfig()->value("homeassistant/enabled", false).toBool();
-    QString prefix = controller->getConfig()->value("homeassistant/prefix", "homeassistant").toString();
     QMap <QString, QVariant> data, endpointName = m_options.value("endpointName").toMap();
     QMap <QString, QString> abbreviation = {{"co2", "CO2"}, {"eco2", "eCO2"}, {"pm1", "PM1"}, {"pm10", "PM10"}, {"pm25", "PM2.5"}, {"voc", "VOC"}};
     QList <QString> trigger = {"action", "event", "scene"};
@@ -18,7 +16,7 @@ void AbstractDeviceObject::publishExposes(HOMEd *controller, const QString &addr
             const Expose &expose = endpoint->exposes().at(i);
             QVariant option = expose->option();
 
-            if (homeassistant && expose->homeassistant())
+            if (haEnabled && expose->homeassistant())
             {
                 QString id = expose->multiple() ? QString::number(it.key()) : QString(), topic = names ? m_name : address;
                 QList <QString> object = {expose->name()};
@@ -47,7 +45,10 @@ void AbstractDeviceObject::publishExposes(HOMEd *controller, const QString &addr
 
                     identity.insert("identifiers", QJsonArray {QString(uniqueId)});
                     identity.insert("name", m_name);
-                    identity.insert("model", m_description);
+                    identity.insert("via_device", controller->uniqueId());
+
+                    if (!m_description.isEmpty())
+                        identity.insert("model", m_description);
 
                     availability.append(QJsonObject {{"topic", controller->mqttTopic("device/%1/%2").arg(controller->serviceName(), names ? m_name : address)}, {"value_template", "{{ value_json.status }}"}});
                     availability.append(QJsonObject {{"topic", controller->mqttTopic("service/%1").arg(controller->serviceName())}, {"value_template", "{{ value_json.status }}"}});
@@ -59,7 +60,7 @@ void AbstractDeviceObject::publishExposes(HOMEd *controller, const QString &addr
                     json.insert("unique_id", QString("%1_%2").arg(uniqueId, object.join('_')));
                 }
 
-                controller->mqttPublish(QString("%1/%2/%3/%4/config").arg(prefix, expose->component(), uniqueId, object.join('_')), json, true);
+                controller->mqttPublish(QString("%1/%2/%3/%4/config").arg(haPrefix, expose->component(), uniqueId, object.join('_')), json, true);
 
                 if (trigger.contains(expose->name()))
                 {
@@ -94,7 +95,7 @@ void AbstractDeviceObject::publishExposes(HOMEd *controller, const QString &addr
                             json.insert("value_template", QString("{{ value_json.%1 }}").arg(expose->name()));
                         }
 
-                        controller->mqttPublish(QString("%1/device_automation/%2/%3/config").arg(prefix, uniqueId, event.join('_')), json, true);
+                        controller->mqttPublish(QString("%1/device_automation/%2/%3/config").arg(haPrefix, uniqueId, event.join('_')), json, true);
                     }
                 }
             }

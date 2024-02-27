@@ -84,7 +84,7 @@ public:
     inline QMap <QString, QVariant> &options(void) { return m_options; }
     inline QMap <quint8, Endpoint> &endpoints(void) { return m_endpoints; }
 
-    void publishExposes(HOMEd *controller, const QString &address, const QString uniqueId, bool remove = false);
+    void publishExposes(HOMEd *controller, const QString &address, const QString uniqueId, const QString haPrefix, bool haEnabled, bool names, bool remove = false);
 
 protected:
 

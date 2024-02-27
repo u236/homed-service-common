@@ -24,22 +24,25 @@ public:
 
     HOMEd(const QString &configFile);
 
-    inline QString serviceName(void) { return m_serviceName; }
-    inline bool mqttStatus(void) { return m_connected; }
     inline QSettings *getConfig(void) { return m_config; }
+    inline QString serviceName(void) { return m_serviceName; }
+    inline QString mqttPrefix(void) { return m_mqttPrefix; }
+    inline QString uniqueId(void) { return m_uniqueId; }
+    inline bool mqttStatus(void) { return m_connected; }
 
     void mqttSubscribe(const QString &topic);
     void mqttUnsubscribe(const QString &topic);
 
     void mqttPublish(const QString &topic, const QJsonObject &json, bool retain = false);
     void mqttPublishString(const QString &topic, const QString &message, bool retain = false);
+    void mqttPublishDiscovery(const QString &name, const QString &version, const QString &haPrefix, bool permitJoin = false);
     void mqttPublishStatus(bool online = true);
 
     QString mqttTopic(const QString &topic = QString());
 
 private:
 
-    QString m_serviceName, m_topicPrefix;
+    QString m_serviceName, m_mqttPrefix, m_uniqueId;
     bool m_connected;
 
     QMqttClient *m_mqtt;

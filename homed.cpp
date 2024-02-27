@@ -20,7 +20,8 @@ HOMEd::HOMEd(const QString &configFile) : QObject(nullptr), m_connected(false), 
         logInfo << "Merry Christmas and a Happy New Year!" << "\xF0\x9F\x8E\x81\xF0\x9F\x8E\x84\xF0\x9F\x8D\xBA";
 
     m_serviceName = QCoreApplication::applicationName().split("-").last();
-    m_topicPrefix = m_config->value("mqtt/prefix", "homed").toString();
+    m_mqttPrefix = m_config->value("mqtt/prefix", "homed").toString();
+    m_uniqueId = QString("homed-%1_%2").arg(m_serviceName, m_mqttPrefix);
 
     m_mqtt->setHostname(m_config->value("mqtt/host", "localhost").toString());
     m_mqtt->setPort(static_cast <quint16> (m_config->value("mqtt/port", 1883).toInt()));
@@ -72,6 +73,77 @@ void HOMEd::mqttPublishString(const QString &topic, const QString &message, bool
     m_mqtt->publish(topic, message.toUtf8(), MQTT_DEFAULT_QOS, retain);
 }
 
+void HOMEd::mqttPublishDiscovery(const QString &name, const QString &version, const QString &haPrefix, bool permitJoin)
+{
+    QList <QString> list = {"connectivity", "version", "restartService"};
+    QJsonObject identity;
+
+    if (permitJoin)
+        list.append("permitJoin");
+
+    identity.insert("identifiers", QJsonArray {m_uniqueId});
+    identity.insert("name", QString("HOMEd %1 (%2)").arg(name, m_mqttPrefix));
+    identity.insert("model", QString("HOMEd %1 Service (%2)").arg(name, m_mqttPrefix));
+    identity.insert("sw_version", version);
+
+    for (int i = 0; i < list.count(); i++)
+    {
+        QString component, item = list.at(i);
+        QJsonObject json;
+
+        if (i)
+        {
+            json.insert("availability_topic", mqttTopic("service/%1").arg(m_serviceName));
+            json.insert("availability_template", "{{ value_json.status }}");
+        }
+
+        json.insert("device", identity);
+        json.insert("entity_category", i < 2 ? "diagnostic" : "config");
+        json.insert("name", QString(item).replace(QRegExp("([A-Z])"), " \\1").replace(0, 1, item.at(0).toUpper()));
+        json.insert("unique_id", QString("%1_%2").arg(m_uniqueId, item));
+
+        switch (i)
+        {
+            case 0: // connectivity
+                component = "binary_sensor";
+                json.insert("device_class", "connectivity");
+                json.insert("state_topic", mqttTopic("service/%1").arg(m_serviceName));
+                json.insert("value_template", "{{ value_json.status }}");
+                json.insert("payload_on", "online");
+                json.insert("payload_off", "offline");
+                break;
+
+            case 1: // version
+                component = "sensor";
+                json.insert("icon", "mdi:tag");
+                json.insert("state_topic", mqttTopic("status/%1").arg(m_serviceName));
+                json.insert("value_template", "{{ value_json.version }}");
+                break;
+
+            case 2: // restartService
+                component = "button";
+                json.insert("icon", "mdi:restart");
+                json.insert("command_topic", mqttTopic("command/%1").arg(m_serviceName));
+                json.insert("payload_press", "{\"action\": \"restartService\"}");
+                break;
+
+            case 3: // permitJoin
+                component = "switch";
+                json.insert("icon", "mdi:human-greeting");
+                json.insert("state_topic", mqttTopic("status/%1").arg(m_serviceName));
+                json.insert("command_topic", mqttTopic("command/%1").arg(m_serviceName));
+                json.insert("value_template", "{{ value_json.permitJoin }}");
+                json.insert("state_on", true);
+                json.insert("state_off", false);
+                json.insert("payload_on", "{\"action\": \"setPermitJoin\", \"enabled\": true}");
+                json.insert("payload_off", "{\"action\": \"setPermitJoin\", \"enabled\": false}");
+                break;
+        }
+
+        mqttPublish(QString("%1/%2/%3/%4/config").arg(haPrefix, component, m_uniqueId, item), json, true);
+    }
+}
+
 void HOMEd::mqttPublishStatus(bool online)
 {
     mqttPublish(mqttTopic("service/%1").arg(m_serviceName), {{"status", online ? "online" : "offline"}}, true);
@@ -79,7 +151,7 @@ void HOMEd::mqttPublishStatus(bool online)
 
 QString HOMEd::mqttTopic(const QString &topic)
 {
-    return QString("%1/%2").arg(m_topicPrefix, topic);
+    return QString("%1/%2").arg(m_mqttPrefix, topic);
 }
 
 void HOMEd::connected(void)
