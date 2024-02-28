@@ -16,7 +16,7 @@ void AbstractDeviceObject::publishExposes(HOMEd *controller, const QString &addr
             const Expose &expose = endpoint->exposes().at(i);
             QVariant option = expose->option();
 
-            if (haEnabled && expose->homeassistant())
+            if (haEnabled && expose->discovery())
             {
                 QString id = expose->multiple() ? QString::number(it.key()) : QString(), topic = names ? m_name : address;
                 QList <QString> object = {expose->name()};
@@ -64,7 +64,8 @@ void AbstractDeviceObject::publishExposes(HOMEd *controller, const QString &addr
 
                 if (trigger.contains(expose->name()))
                 {
-                    QList <QString> list = expose->name() != "scene" ? option.toMap().value("trigger").toStringList() : QVariant(option.toMap().value("name").toMap().values()).toStringList();
+                    QVariant data = option.toMap().value("enum");
+                    QList <QString> list = data.type() == QVariant::Map ? QVariant(data.toMap().values()).toStringList() : data.toStringList();
 
                     for (int i = 0; i < list.count(); i++)
                     {
