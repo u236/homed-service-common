@@ -16,7 +16,7 @@ void AbstractDeviceObject::publishExposes(HOMEd *controller, const QString &addr
             const Expose &expose = endpoint->exposes().at(i);
             QVariant option = expose->option();
 
-            if (haEnabled && expose->homeassistant())
+            if (haEnabled && expose->discovery())
             {
                 QString id = expose->multiple() ? QString::number(it.key()) : QString(), topic = names ? m_name : address;
                 QList <QString> object = {expose->name()};

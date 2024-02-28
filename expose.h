@@ -14,10 +14,10 @@ class ExposeObject : public AbstractMetaObject
 public:
 
     ExposeObject(const QString &name, const QString &component) :
-        AbstractMetaObject(name), m_component(component), m_multiple(false), m_homeassistant(true) {}
+        AbstractMetaObject(name), m_component(component), m_multiple(false), m_discovery(true) {}
 
     ExposeObject(const QString &name) :
-        AbstractMetaObject(name), m_multiple(false), m_homeassistant(false) {}
+        AbstractMetaObject(name), m_multiple(false), m_discovery(false) {}
 
     virtual ~ExposeObject(void) {}
     virtual QJsonObject request(void) { return QJsonObject(); };
@@ -29,14 +29,14 @@ public:
 
     inline bool multiple(void) { return m_multiple; }
     inline void setMultiple(bool value) { m_multiple = value; }
-
-    inline bool homeassistant(void) { return m_homeassistant; }
+    
+    inline bool discovery(void) { return m_discovery; }
     static void registerMetaTypes(void);
 
 protected:
 
     QString m_component, m_stateTopic, m_commandTopic;
-    bool m_multiple, m_homeassistant;
+    bool m_multiple, m_discovery;
 
 };
 
