@@ -64,7 +64,8 @@ void AbstractDeviceObject::publishExposes(HOMEd *controller, const QString &addr
 
                 if (trigger.contains(expose->name()))
                 {
-                    QList <QString> list = expose->name() != "scene" ? option.toMap().value("trigger").toStringList() : QVariant(option.toMap().value("name").toMap().values()).toStringList();
+                    QVariant data = option.toMap().value("enum");
+                    QList <QString> list = data.type() == QVariant::Map ? QVariant(data.toMap().values()).toStringList() : data.toStringList();
 
                     for (int i = 0; i < list.count(); i++)
                     {

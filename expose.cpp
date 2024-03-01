@@ -53,7 +53,7 @@ QJsonObject SensorObject::request(void)
     if (options.contains("state"))
         json.insert("state_class",                  options.value("state").toString());
 
-    if (options.contains("unit") && !options.value("raw").toBool())
+    if (options.contains("unit"))
         json.insert("unit_of_measurement",          options.value("unit").toString());
 
     if (options.contains("round"))
