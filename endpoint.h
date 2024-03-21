@@ -69,6 +69,9 @@ public:
     inline QString description(void) { return m_description; }
     inline void setDescription(const QString &value) { m_description = value; }
 
+    inline QString note(void) { return m_note; }
+    inline void setNote(const QString &value) { m_note = value; }
+
     inline bool active(void) { return m_active; }
     inline void setActive(bool value) { m_active = value; }
 
@@ -89,7 +92,7 @@ public:
 protected:
 
     quint8 m_version;
-    QString m_name, m_manufacturerName, m_modelName, m_description;
+    QString m_name, m_manufacturerName, m_modelName, m_description, m_note;
     bool m_active, m_discovery, m_cloud;
 
     Availability m_availability;
