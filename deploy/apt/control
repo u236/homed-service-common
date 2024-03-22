@@ -1,0 +1,7 @@
+Package: homed-common
+Version:
+Architecture:
+Maintainer: u236
+Section: misc
+Priority: standard
+Description: HOMEd Services Common Files
