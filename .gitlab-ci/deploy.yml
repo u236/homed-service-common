@@ -48,7 +48,7 @@
   - "fakeroot tar -czf data.tar.gz -C deploy/data ."
   - "fakeroot tar -czf ${PACKAGE_FILE} control.tar.gz data.tar.gz debian-binary"
   - "mkdir -p ${FEED_DIR}"
-  - "rm -f ${FEED_DIR}/${NAME}*"
+  - "rm -f ${FEED_DIR}/${NAME}_*"
   - "cp ${PACKAGE_FILE} ${FEED_DIR}"
   - "/opt/scripts/opkgIndex.sh ${FEED_DIR} > ${FEED_DIR}/Packages"
   - "/opt/opkg/usign -S -m ${FEED_DIR}/Packages -s /opt/opkg/opkg.key -x ${FEED_DIR}/Packages.sig"
