@@ -77,6 +77,7 @@
   "strobe":                     {"type": "toggle", "icon": "mdi:alarm-light"},
   "temperatureRelay":           {"type": "toggle", "icon": "mdi:thermometer"},
   "temperatureRelayInvert":     {"type": "toggle", "icon": "mdi:thermometer"},
+  "trigger":                    {"type": "toggle", "icon": "mdi:garage"},
   "tumbleSwitch":               {"type": "toggle", "icon": "mdi:dip-switch"},
   "vocRelay":                   {"type": "toggle", "icon": "mdi:molecule"},
   "vocRelayInvert":             {"type": "toggle", "icon": "mdi:molecule"},
