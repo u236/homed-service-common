@@ -31,7 +31,6 @@
   "illuminance":                {"type": "sensor", "class": "illuminance", "state": "measurement", "unit": "lx"},
   "illumination":               {"type": "sensor", "icon": "mdi:brightness-5"},
   "humidity":                   {"type": "sensor", "class": "humidity", "state": "measurement", "unit": "%", "round": 1},
-  "light":                      {"type": "sensor", "icon": "mdi:lightbulb"},
   "moisture":                   {"type": "sensor", "class": "moisture", "state": "measurement", "unit": "%", "round": 1},
   "motionSpeed":                {"type": "sensor", "icon": "mdi:motion"},
   "motionStatus":               {"type": "sensor", "icon": "mdi:motion"},
