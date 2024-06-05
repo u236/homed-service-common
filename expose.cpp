@@ -280,7 +280,7 @@ QJsonObject ThermostatObject::request(void)
     QMap <QString, QVariant> targetTemperature = option("targetTemperature").toMap();
     QJsonObject json;
 
-    if (option("heatingStatus").toBool())
+    if (option("runningStatus").toBool())
     {
         json.insert("action_template",              "{{ \"heating\" if value_json.heating else \"off\" }}");
         json.insert("action_topic",                 m_stateTopic);

@@ -118,10 +118,10 @@ void AbstractDeviceObject::publishExposes(HOMEd *controller, const QString &addr
 
                 if (expose->name() == "thermostat")
                 {
-                    QVariant heatingStatus = expose->option("heatingStatus"), operationMode = expose->option("operationMode"), systemMode = expose->option("systemMode"), targetTemperature = expose->option("targetTemperature");
+                    QVariant runningStatus = expose->option("runningStatus"), operationMode = expose->option("operationMode"), systemMode = expose->option("systemMode"), targetTemperature = expose->option("targetTemperature");
 
-                    if (heatingStatus.isValid())
-                        options.insert("heatingStatus", heatingStatus);
+                    if (runningStatus.isValid())
+                        options.insert("runningStatus", runningStatus);
 
                     if (operationMode.isValid())
                         options.insert("operationMode", operationMode);
