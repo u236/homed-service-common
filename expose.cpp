@@ -199,7 +199,6 @@ QJsonObject LightObject::request(void)
     if (options.contains("color"))
     {
         commandOnTemplate.append(                   "{% if red is defined and green is defined and blue is defined %},\"color\":[{{ red }},{{ green }},{{ blue }}]{% endif %}");
-
         json.insert("red_template",                 "{{ value_json.color[0] }}");
         json.insert("green_template",               "{{ value_json.color[1] }}");
         json.insert("blue_template",                "{{ value_json.color[2] }}");
@@ -210,7 +209,6 @@ QJsonObject LightObject::request(void)
         QMap <QString, QVariant> colorTemperature = option("colorTemperature").toMap();
 
         commandOnTemplate.append(                   "{% if color_temp is defined %},\"colorTemperature\":{{ color_temp }}{% endif %}");
-
         json.insert("color_temp_template",          "{{ value_json.colorTemperature }}");
         json.insert("min_mireds",                   colorTemperature.value("min", 153).toInt());
         json.insert("max_mireds",                   colorTemperature.value("max", 500).toInt());
