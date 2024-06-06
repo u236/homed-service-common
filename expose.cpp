@@ -276,14 +276,39 @@ QJsonObject LockObject::request(void)
 
 QJsonObject ThermostatObject::request(void)
 {
-    QList <QString> operationMode = option("operationMode").toMap().value("enum").toStringList(), systemMode = option("systemMode").toMap().value("enum").toStringList();
+    QList <QString> operationMode = option("operationMode").toMap().value("enum").toStringList(), fanMode = option("fanMode").toMap().value("enum").toStringList(), systemMode = option("systemMode").toMap().value("enum").toStringList();
     QMap <QString, QVariant> targetTemperature = option("targetTemperature").toMap();
     QJsonObject json;
 
+    if (systemMode.contains("fan"))
+        systemMode.replace(systemMode.indexOf("fan"), "fan_only");
+
     if (option("runningStatus").toBool())
     {
-        json.insert("action_template",              "{{ \"heating\" if value_json.heating else \"off\" }}");
+        QString actionTemplate = "\"off\" if value_json.running == false";
+
+        if (systemMode.contains("heat"))
+            actionTemplate.append(                  " else \"heating\" if value_json.systemMode == \"heat\"");
+
+        if (systemMode.contains("cool"))
+            actionTemplate.append(                  " else \"cooling\" if value_json.systemMode == \"cool\"");
+
+        if (systemMode.contains("fan_only"))
+            actionTemplate.append(                  " else \"fan\" if value_json.systemMode == \"fan\"");
+
+        json.insert("action_template",              QString("{{ %1 else \"idle\" }}").arg(actionTemplate));
         json.insert("action_topic",                 m_stateTopic);
+    }
+
+    if (!fanMode.isEmpty())
+    {
+        json.insert("fan_modes",                    QJsonArray::fromStringList(fanMode));
+
+        json.insert("fan_mode_state_template",      "{{ value_json.fanMode }}");
+        json.insert("fan_mode_state_topic",         m_stateTopic);
+
+        json.insert("fan_mode_command_template",    "{\"fanMode\":\"{{ value }}\"}");
+        json.insert("fan_mode_command_topic",       m_commandTopic);
     }
 
     if (!operationMode.isEmpty())
@@ -308,10 +333,10 @@ QJsonObject ThermostatObject::request(void)
 
     json.insert("modes",                            systemMode.isEmpty() ? QJsonArray {"heat"} : QJsonArray::fromStringList(systemMode));
 
-    json.insert("mode_state_template",              "{{ value_json.systemMode }}");
+    json.insert("mode_state_template",              "{{ \"fan_only\" if value_json.systemMode == \"fan\" else value_json.systemMode }}");
     json.insert("mode_state_topic",                 m_stateTopic);
 
-    json.insert("mode_command_template",            "{\"systemMode\":\"{{ value }}\"}");
+    json.insert("mode_command_template",            "{\"systemMode\":\"{{ \"fan\" if value == \"fan_only\" else value }}\"}");
     json.insert("mode_command_topic",               m_commandTopic);
 
     json.insert("current_temperature_template",     "{{ value_json.temperature }}");
