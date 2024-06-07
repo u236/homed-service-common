@@ -40,7 +40,7 @@ Build Linux Binary (armhf):
   variables:
     ARCHITECTURE: armhf
     QT_BUILD: qt-arm-linux-gnueabihf-5.15.4-shared
-    COMPILER: gcc-arm-none-linux-gnueabihf-10.2.0
+    COMPILER: gcc-arm-linux-gnuebihf-9.4.0
 
 Build OpenWRT Binary (aarch64_generic):
   extends: .build
