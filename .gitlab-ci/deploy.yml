@@ -1,4 +1,4 @@
-.deploy_apt:
+.deploy_linux:
   stage: deploy
   variables:
     PACKAGE_FILE: ${NAME}_${CI_COMMIT_TAG}_${ARCHITECTURE}.deb
@@ -8,7 +8,7 @@
   - "mkdir -p deploy/data/usr/bin"
   - "cp -r deploy/apt deploy/data/DEBIAN"
   - "cp deploy/systemd/${NAME}.service deploy/data/lib/systemd/system"
-  - "cp ${NAME}-${ARCHITECTURE} deploy/data/usr/bin/${NAME}"
+  - "cp ${NAME}-linux-${ARCHITECTURE} deploy/data/usr/bin/${NAME}"
   - "md5deep -lr deploy/data | grep -v DEBIAN | sed \"s+deploy/data/++g\" | sort -k2 > deploy/data/DEBIAN/md5sums"
   - "sed -i \"s+^Version:.*+Version: ${CI_COMMIT_TAG}+g\" deploy/data/DEBIAN/control"
   - "sed -i \"s+^Architecture:.*+Architecture: ${ARCHITECTURE}+g\" deploy/data/DEBIAN/control"
@@ -26,7 +26,7 @@
     when: always
   - when: never
 
-.deploy_opkg:
+.deploy_openwrt:
   stage: deploy
   variables:
     PACKAGE_FILE: ${NAME}_${CI_COMMIT_TAG}_${ARCHITECTURE}.ipk
@@ -37,7 +37,7 @@
   - "mkdir -p deploy/data/usr/bin"
   - "cp -r deploy/luci/* deploy/data"
   - "cp deploy/procd/${NAME} deploy/data/etc/init.d"
-  - "cp ${NAME}-${ARCHITECTURE} deploy/data/usr/bin/${NAME}"
+  - "cp ${NAME}-openwrt-${ARCHITECTURE} deploy/data/usr/bin/${NAME}"
   - "sed -i \"s+^Version:.*+Version: ${CI_COMMIT_TAG}+g\" deploy/opkg/control"
   - "sed -i \"s+^Architecture:.*+Architecture: ${ARCHITECTURE}+g\" deploy/opkg/control"
   - "echo \"2.0\" > debian-binary"
@@ -66,9 +66,9 @@ Deploy Docker Images:
   stage: deploy
   script:
   - "[[ -n ${DOCKER_EXTRA} ]] && sh -c \"${DOCKER_EXTRA}\""
-  - "cp ${NAME}-amd64 deploy/docker/${NAME}-amd64"
-  - "cp ${NAME}-aarch64 deploy/docker/${NAME}-arm64"
-  - "cp ${NAME}-armhf deploy/docker/${NAME}-arm"
+  - "cp ${NAME}-linux-amd64 deploy/docker/${NAME}-amd64"
+  - "cp ${NAME}-linux-aarch64 deploy/docker/${NAME}-arm64"
+  - "cp ${NAME}-linux-armhf deploy/docker/${NAME}-arm"
   - "docker buildx create --driver-opt network=host --name job_${CI_JOB_ID} --use"
   - "docker buildx build --platform linux/arm64,linux/arm/v7,linux/amd64 --push --tag 127.0.0.1:5000/${NAME}:${CI_COMMIT_TAG} --tag 127.0.0.1:5000/${NAME}:latest deploy/docker/"
   - "docker buildx prune -af"
@@ -78,47 +78,47 @@ Deploy Docker Images:
     when: always
   - when: never
 
-Deploy APT Package (amd64):
-  extends: .deploy_apt
+Deploy Linux Package (amd64):
+  extends: .deploy_linux
   variables:
     ARCHITECTURE: amd64
 
-Deploy APT Package (aarch64):
-  extends: .deploy_apt
+Deploy Linux Package (aarch64):
+  extends: .deploy_linux
   variables:
     ARCHITECTURE: aarch64
 
-Deploy APT Package (arm64):
-  extends: .deploy_apt
+Deploy Linux Package (arm64):
+  extends: .deploy_linux
   variables:
     ARCHITECTURE: arm64
 
-Deploy APT Package (armhf):
-  extends: .deploy_apt
+Deploy Linux Package (armhf):
+  extends: .deploy_linux
   variables:
     ARCHITECTURE: armhf
 
 Deploy OpenWRT Package (aarch64_generic):
-  extends: .deploy_opkg
+  extends: .deploy_openwrt
   variables:
     ARCHITECTURE: aarch64_generic
 
 Deploy OpenWRT Package (arm_cortex-a7_neon-vfpv4):
-  extends: .deploy_opkg
+  extends: .deploy_openwrt
   variables:
     ARCHITECTURE: arm_cortex-a7_neon-vfpv4
 
 Deploy OpenWRT Package (arm_cortex-a9_neon):
-  extends: .deploy_opkg
+  extends: .deploy_openwrt
   variables:
     ARCHITECTURE: arm_cortex-a9_neon
 
 Deploy OpenWRT Package (mips_24kc):
-  extends: .deploy_opkg
+  extends: .deploy_openwrt
   variables:
     ARCHITECTURE: mips_24kc
 
 Deploy OpenWRT Package (mipsel_24kc):
-  extends: .deploy_opkg
+  extends: .deploy_openwrt
   variables:
     ARCHITECTURE: mipsel_24kc
