@@ -163,3 +163,13 @@ Deploy Keenetic NDMS Package (aarch64-3.10):
   extends: .deploy_ndms
   variables:
     ARCHITECTURE: aarch64-3.10
+
+Deploy Keenetic NDMS Package (mipssf-k3.4):
+  extends: .deploy_ndms
+  variables:
+    ARCHITECTURE: mipssf-k3.4
+
+Deploy Keenetic NDMS Package (mipselsf-k3.4):
+  extends: .deploy_ndms
+  variables:
+    ARCHITECTURE: mipselsf-k3.4
