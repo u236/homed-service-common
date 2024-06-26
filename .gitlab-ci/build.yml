@@ -84,16 +84,16 @@ Build Keenetic NDMS Binary (aarch64-3.10):
     QT_BUILD: qt-aarch64-ndms-linux-gnu-5.15.4-shared
     COMPILER: gcc-aarch64-ndms-linux-gnu-8.2.0
 
-Build Keenetic NDMS Binary (mipssf-k3.4):
+Build Keenetic NDMS Binary (mips-3.4):
   extends: .build
   variables:
-    ARCHITECTURE: ndms-mipssf-k3.4
+    ARCHITECTURE: ndms-mips-3.4
     QT_BUILD: qt-mips-ndms-linux-uclibc-5.15.4-shared
     COMPILER: gcc-mips-ndms-linux-uclibc-8.2.0
 
-Build Keenetic NDMS Binary (mipselsf-k3.4):
+Build Keenetic NDMS Binary (mipsel-3.4):
   extends: .build
   variables:
-    ARCHITECTURE: ndms-mipselsf-k3.4
+    ARCHITECTURE: ndms-mipsel-3.4
     QT_BUILD: qt-mipsel-ndms-linux-uclibc-5.15.4-shared
     COMPILER: gcc-mipsel-ndms-linux-uclibc-8.2.0

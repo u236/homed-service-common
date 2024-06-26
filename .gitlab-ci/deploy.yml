@@ -87,7 +87,6 @@
   - "rm -f ${FEED_DIR}/${NAME}_*"
   - "cp ${PACKAGE_FILE} ${FEED_DIR}"
   - "/opt/scripts/opkgIndex.sh ${FEED_DIR} > ${FEED_DIR}/Packages"
-  - "/opt/opkg/usign -S -m ${FEED_DIR}/Packages -s /opt/opkg/opkg.key -x ${FEED_DIR}/Packages.sig"
   - "gzip -fk ${FEED_DIR}/Packages"
   artifacts:
     paths:
@@ -164,12 +163,12 @@ Deploy Keenetic NDMS Package (aarch64-3.10):
   variables:
     ARCHITECTURE: aarch64-3.10
 
-Deploy Keenetic NDMS Package (mipssf-k3.4):
+Deploy Keenetic NDMS Package (mips-3.4):
   extends: .deploy_ndms
   variables:
-    ARCHITECTURE: mipssf-k3.4
+    ARCHITECTURE: mips-3.4
 
-Deploy Keenetic NDMS Package (mipselsf-k3.4):
+Deploy Keenetic NDMS Package (mipsel-3.4):
   extends: .deploy_ndms
   variables:
-    ARCHITECTURE: mipselsf-k3.4
+    ARCHITECTURE: mipsel-3.4
