@@ -62,6 +62,42 @@
     when: always
   - when: never
 
+.deploy_ndms:
+  stage: deploy
+  variables:
+    PACKAGE_FILE: ${NAME}_${CI_COMMIT_TAG}_${ARCHITECTURE}.ipk
+    FEED_DIR: /var/www/ndms.homed.su/${ARCHITECTURE}
+  script:
+  - "[[ -n ${PACKAGE_EXTRA} ]] && sh -c \"${PACKAGE_EXTRA}\""
+  - "[[ -f deploy/data/etc/homed/${NAME}.conf ]] && sed -i -e \"s\\=/opt/${NAME}\\=/opt/var/lib/${NAME}\\g\" -e \"s\\=/usr/share\\=/opt/share\\g\" -e \"s\\=/var/log\\=/opt/var/log\\g\" deploy/data/etc/homed/${NAME}.conf && mkdir -p deploy/data/opt/etc/homed && mv deploy/data/etc/homed/${NAME}.conf deploy/data/opt/etc/homed && rm -r deploy/data/etc"
+  - "[[ -d deploy/data/usr/share/${NAME} ]] && mkdir -p deploy/data/opt/share && mv deploy/data/usr/share/${NAME} deploy/data/opt/share && rm -r deploy/data/usr"
+  - "[[ -d deploy/data/opt/${NAME} ]] && mkdir -p deploy/data/opt/var/lib && mv deploy/data/opt/${NAME} deploy/data/opt/var/lib/${NAME}"
+  - "mkdir -p deploy/data/opt/etc/init.d"
+  - "mkdir -p deploy/data/opt/bin"
+  - "cp deploy/entware/* deploy/data/opt/etc/init.d"
+  - "cp ${NAME}-ndms-${ARCHITECTURE} deploy/data/opt/bin/${NAME}"
+  - "sed -i \"s+^Version:.*+Version: ${CI_COMMIT_TAG}+g\" deploy/ndms/control"
+  - "sed -i \"s+^Architecture:.*+Architecture: ${ARCHITECTURE}+g\" deploy/ndms/control"
+  - "echo \"2.0\" > debian-binary"
+  - "chmod +x deploy/data/opt/etc/init.d/*"
+  - "fakeroot tar -czf control.tar.gz -C deploy/ndms ."
+  - "fakeroot tar -czf data.tar.gz -C deploy/data ."
+  - "fakeroot tar -czf ${PACKAGE_FILE} control.tar.gz data.tar.gz debian-binary"
+  - "mkdir -p ${FEED_DIR}"
+  - "rm -f ${FEED_DIR}/${NAME}_*"
+  - "cp ${PACKAGE_FILE} ${FEED_DIR}"
+  - "/opt/scripts/opkgIndex.sh ${FEED_DIR} > ${FEED_DIR}/Packages"
+  - "/opt/opkg/usign -S -m ${FEED_DIR}/Packages -s /opt/opkg/opkg.key -x ${FEED_DIR}/Packages.sig"
+  - "gzip -fk ${FEED_DIR}/Packages"
+  artifacts:
+    paths:
+    - ${PACKAGE_FILE}
+    expire_in: never
+  rules:
+  - if: $CI_COMMIT_TAG =~ /^\d.\d.\d+$/ || $CI_COMMIT_TAG == "dev" # TODO: remove dev
+    when: always
+  - when: never
+
 Deploy Docker Images:
   stage: deploy
   script:
@@ -122,3 +158,8 @@ Deploy OpenWRT Package (mipsel_24kc):
   extends: .deploy_openwrt
   variables:
     ARCHITECTURE: mipsel_24kc
+
+Deploy Keenetic NDMS Package (aarch64-3.10):
+  extends: .deploy_ndms
+  variables:
+    ARCHITECTURE: aarch64-3.10
