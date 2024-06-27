@@ -33,7 +33,7 @@ Build Linux Binary (aarch64):
     QT_BUILD: qt-aarch64-linux-gnu-5.15.4-shared
     COMPILER: gcc-aarch64-none-linux-gnu-10.2.0
   after_script:
-  - "cp ${NAME}-aarch64 ${NAME}-arm64"
+  - "cp ${NAME}-linux-aarch64 ${NAME}-linux-arm64"
 
 Build Linux Binary (armhf):
   extends: .build
@@ -80,20 +80,20 @@ Build OpenWRT Binary (mipsel_24kc):
 Build Keenetic NDMS Binary (aarch64-3.10):
   extends: .build
   variables:
-    ARCHITECTURE: ndms-aarch64-3.10
-    QT_BUILD: qt-aarch64-ndms-linux-gnu-5.15.4-shared
-    COMPILER: gcc-aarch64-ndms-linux-gnu-8.2.0
+    ARCHITECTURE: entware-aarch64-3.10
+    QT_BUILD: qt-aarch64-openwrt-linux-gnu-5.15.4-shared
+    COMPILER: gcc-aarch64-openwrt-linux-gnu-8.4.0
 
 Build Keenetic NDMS Binary (mips-3.4):
   extends: .build
   variables:
-    ARCHITECTURE: ndms-mips-3.4
-    QT_BUILD: qt-mips-ndms-linux-uclibc-5.15.4-shared
-    COMPILER: gcc-mips-ndms-linux-uclibc-8.2.0
+    ARCHITECTURE: entware-mips-3.4
+    QT_BUILD: qt-mips-openwrt-linux-gnu-5.15.4-shared
+    COMPILER: gcc-mips-openwrt-linux-gnu-8.4.0
 
 Build Keenetic NDMS Binary (mipsel-3.4):
   extends: .build
   variables:
-    ARCHITECTURE: ndms-mipsel-3.4
-    QT_BUILD: qt-mipsel-ndms-linux-uclibc-5.15.4-shared
-    COMPILER: gcc-mipsel-ndms-linux-uclibc-8.2.0
+    ARCHITECTURE: entware-mipsel-3.4
+    QT_BUILD: qt-mipsel-openwrt-linux-gnu-5.15.4-shared
+    COMPILER: gcc-mipsel-openwrt-linux-gnu-8.4.0

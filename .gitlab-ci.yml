@@ -46,17 +46,17 @@
     when: always
   - when: never
 
-.deploy_ndms:
+.deploy_entware:
   stage: deploy
   variables:
     PACKAGE_FILE: homed-common_${CI_COMMIT_TAG}_${ARCHITECTURE}.ipk
-    FEED_DIR: /var/www/ndms.homed.su/${ARCHITECTURE}
+    FEED_DIR: /var/www/entware.homed.su/${ARCHITECTURE}
   script:
   - "mv deploy/data/usr deploy/data/opt"
-  - "sed -i \"s+^Version:.*+Version: ${CI_COMMIT_TAG}+g\" deploy/ndms/control"
-  - "sed -i \"s+^Architecture:.*+Architecture: ${ARCHITECTURE}+g\" deploy/ndms/control"
+  - "sed -i \"s+^Version:.*+Version: ${CI_COMMIT_TAG}+g\" deploy/entware/control"
+  - "sed -i \"s+^Architecture:.*+Architecture: ${ARCHITECTURE}+g\" deploy/entware/control"
   - "echo \"2.0\" > debian-binary"
-  - "fakeroot tar -czf control.tar.gz -C deploy/ndms ."
+  - "fakeroot tar -czf control.tar.gz -C deploy/entware ."
   - "fakeroot tar -czf data.tar.gz -C deploy/data ."
   - "fakeroot tar -czf ${PACKAGE_FILE} control.tar.gz data.tar.gz debian-binary"
   - "mkdir -p ${FEED_DIR}"
@@ -122,16 +122,16 @@ Deploy OpenWRT Package (mipsel_24kc):
     ARCHITECTURE: mipsel_24kc
 
 Deploy Keenetic NDMS Package (aarch64-3.10):
-  extends: .deploy_ndms
+  extends: .deploy_entware
   variables:
     ARCHITECTURE: aarch64-3.10
 
 Deploy Keenetic NDMS Package (mips-3.4):
-  extends: .deploy_ndms
+  extends: .deploy_entware
   variables:
     ARCHITECTURE: mips-3.4
 
 Deploy Keenetic NDMS Package (mipsel-3.4):
-  extends: .deploy_ndms
+  extends: .deploy_entware
   variables:
     ARCHITECTURE: mipsel-3.4

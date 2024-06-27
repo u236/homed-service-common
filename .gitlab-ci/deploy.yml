@@ -62,11 +62,11 @@
     when: always
   - when: never
 
-.deploy_ndms:
+.deploy_entware:
   stage: deploy
   variables:
     PACKAGE_FILE: ${NAME}_${CI_COMMIT_TAG}_${ARCHITECTURE}.ipk
-    FEED_DIR: /var/www/ndms.homed.su/${ARCHITECTURE}
+    FEED_DIR: /var/www/entware.homed.su/${ARCHITECTURE}
   script:
   - "[[ -n ${PACKAGE_EXTRA} ]] && sh -c \"${PACKAGE_EXTRA}\""
   - "[[ -f deploy/data/etc/homed/${NAME}.conf ]] && sed -i -e \"s\\=/opt/${NAME}\\=/opt/var/lib/${NAME}\\g\" -e \"s\\=/usr/share\\=/opt/share\\g\" -e \"s\\=/var/log\\=/opt/var/log\\g\" deploy/data/etc/homed/${NAME}.conf && mkdir -p deploy/data/opt/etc/homed && mv deploy/data/etc/homed/${NAME}.conf deploy/data/opt/etc/homed && rm -r deploy/data/etc"
@@ -74,13 +74,13 @@
   - "[[ -d deploy/data/opt/${NAME} ]] && mkdir -p deploy/data/opt/var/lib && mv deploy/data/opt/${NAME} deploy/data/opt/var/lib/${NAME}"
   - "mkdir -p deploy/data/opt/etc/init.d"
   - "mkdir -p deploy/data/opt/bin"
-  - "cp deploy/entware/* deploy/data/opt/etc/init.d"
-  - "cp ${NAME}-ndms-${ARCHITECTURE} deploy/data/opt/bin/${NAME}"
-  - "sed -i \"s+^Version:.*+Version: ${CI_COMMIT_TAG}+g\" deploy/ndms/control"
-  - "sed -i \"s+^Architecture:.*+Architecture: ${ARCHITECTURE}+g\" deploy/ndms/control"
+  - "mv deploy/entware/S* deploy/data/opt/etc/init.d"
+  - "cp ${NAME}-entware-${ARCHITECTURE} deploy/data/opt/bin/${NAME}"
+  - "sed -i \"s+^Version:.*+Version: ${CI_COMMIT_TAG}+g\" deploy/entware/control"
+  - "sed -i \"s+^Architecture:.*+Architecture: ${ARCHITECTURE}+g\" deploy/entware/control"
   - "echo \"2.0\" > debian-binary"
   - "chmod +x deploy/data/opt/etc/init.d/*"
-  - "fakeroot tar -czf control.tar.gz -C deploy/ndms ."
+  - "fakeroot tar -czf control.tar.gz -C deploy/entware ."
   - "fakeroot tar -czf data.tar.gz -C deploy/data ."
   - "fakeroot tar -czf ${PACKAGE_FILE} control.tar.gz data.tar.gz debian-binary"
   - "mkdir -p ${FEED_DIR}"
@@ -159,16 +159,16 @@ Deploy OpenWRT Package (mipsel_24kc):
     ARCHITECTURE: mipsel_24kc
 
 Deploy Keenetic NDMS Package (aarch64-3.10):
-  extends: .deploy_ndms
+  extends: .deploy_entware
   variables:
     ARCHITECTURE: aarch64-3.10
 
 Deploy Keenetic NDMS Package (mips-3.4):
-  extends: .deploy_ndms
+  extends: .deploy_entware
   variables:
     ARCHITECTURE: mips-3.4
 
 Deploy Keenetic NDMS Package (mipsel-3.4):
-  extends: .deploy_ndms
+  extends: .deploy_entware
   variables:
     ARCHITECTURE: mipsel-3.4
