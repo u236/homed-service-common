@@ -76,6 +76,15 @@
 Clone repository:
     script: "echo \"Common files for HOMEd services build\""
 
+Clean Up Linux Packages:
+  stage: deploy
+  script:
+  - "/opt/scripts/aptRemove.sh homed-common"
+  rules:
+  - if: $CI_COMMIT_TAG =~ /^\d.\d.\d+$/
+    when: always
+  - when: never
+
 Deploy Linux Package (amd64):
   extends: .deploy_linux
   variables:
