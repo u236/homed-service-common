@@ -1,4 +1,4 @@
-.deploy_apt:
+.deploy_linux:
   stage: deploy
   variables:
     PACKAGE_FILE: homed-common_${CI_COMMIT_TAG}_${ARCHITECTURE}.deb
@@ -19,7 +19,7 @@
     when: always
   - when: never
 
-.deploy_opkg:
+.deploy_openwrt:
   stage: deploy
   variables:
     PACKAGE_FILE: homed-common_${CI_COMMIT_TAG}_${ARCHITECTURE}.ipk
@@ -46,50 +46,101 @@
     when: always
   - when: never
 
+.deploy_entware:
+  stage: deploy
+  variables:
+    PACKAGE_FILE: homed-common_${CI_COMMIT_TAG}_${ARCHITECTURE}.ipk
+    FEED_DIR: /var/www/entware.homed.su/${ARCHITECTURE}
+  script:
+  - "mv deploy/data/usr deploy/data/opt"
+  - "sed -i \"s+^Version:.*+Version: ${CI_COMMIT_TAG}+g\" deploy/entware/control"
+  - "sed -i \"s+^Architecture:.*+Architecture: ${ARCHITECTURE}+g\" deploy/entware/control"
+  - "echo \"2.0\" > debian-binary"
+  - "fakeroot tar -czf control.tar.gz -C deploy/entware ."
+  - "fakeroot tar -czf data.tar.gz -C deploy/data ."
+  - "fakeroot tar -czf ${PACKAGE_FILE} control.tar.gz data.tar.gz debian-binary"
+  - "mkdir -p ${FEED_DIR}"
+  - "rm -f ${FEED_DIR}/homed-common_*"
+  - "cp ${PACKAGE_FILE} ${FEED_DIR}"
+  - "/opt/scripts/opkgIndex.sh ${FEED_DIR} > ${FEED_DIR}/Packages"
+  - "gzip -fk ${FEED_DIR}/Packages"
+  artifacts:
+    paths:
+    - ${PACKAGE_FILE}
+    expire_in: never
+  rules:
+  - if: $CI_COMMIT_TAG =~ /^\d.\d.\d+$/
+    when: always
+  - when: never
+
 Clone repository:
     script: "echo \"Common files for HOMEd services build\""
 
-Deploy APT Package (amd64):
-  extends: .deploy_apt
+Clean Up Linux Packages:
+  stage: deploy
+  script:
+  - "/opt/scripts/aptRemove.sh homed-common"
+  rules:
+  - if: $CI_COMMIT_TAG =~ /^\d.\d.\d+$/
+    when: always
+  - when: never
+
+Deploy Linux Package (amd64):
+  extends: .deploy_linux
   variables:
     ARCHITECTURE: amd64
 
-Deploy APT Package (aarch64):
-  extends: .deploy_apt
+Deploy Linux Package (aarch64):
+  extends: .deploy_linux
   variables:
     ARCHITECTURE: aarch64
 
-Deploy APT Package (arm64):
-  extends: .deploy_apt
+Deploy Linux Package (arm64):
+  extends: .deploy_linux
   variables:
     ARCHITECTURE: arm64
 
-Deploy APT Package (armhf):
-  extends: .deploy_apt
+Deploy Linux Package (armhf):
+  extends: .deploy_linux
   variables:
     ARCHITECTURE: armhf
 
 Deploy OpenWRT Package (aarch64_generic):
-  extends: .deploy_opkg
+  extends: .deploy_openwrt
   variables:
     ARCHITECTURE: aarch64_generic
 
 Deploy OpenWRT Package (arm_cortex-a7_neon-vfpv4):
-  extends: .deploy_opkg
+  extends: .deploy_openwrt
   variables:
     ARCHITECTURE: arm_cortex-a7_neon-vfpv4
 
 Deploy OpenWRT Package (arm_cortex-a9_neon):
-  extends: .deploy_opkg
+  extends: .deploy_openwrt
   variables:
     ARCHITECTURE: arm_cortex-a9_neon
 
 Deploy OpenWRT Package (mips_24kc):
-  extends: .deploy_opkg
+  extends: .deploy_openwrt
   variables:
     ARCHITECTURE: mips_24kc
 
 Deploy OpenWRT Package (mipsel_24kc):
-  extends: .deploy_opkg
+  extends: .deploy_openwrt
   variables:
     ARCHITECTURE: mipsel_24kc
+
+Deploy Keenetic NDMS Package (aarch64-3.10):
+  extends: .deploy_entware
+  variables:
+    ARCHITECTURE: aarch64-3.10
+
+Deploy Keenetic NDMS Package (mips-3.4):
+  extends: .deploy_entware
+  variables:
+    ARCHITECTURE: mips-3.4
+
+Deploy Keenetic NDMS Package (mipsel-3.4):
+  extends: .deploy_entware
+  variables:
+    ARCHITECTURE: mipsel-3.4

@@ -1,7 +1,6 @@
 #include <QFileInfo>
 #include <QLockFile>
 #include <QProcess>
-#include <signal.h>
 #include "homed.h"
 #include "logger.h"
 

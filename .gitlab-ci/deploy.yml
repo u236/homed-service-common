@@ -1,4 +1,4 @@
-.deploy_apt:
+.deploy_linux:
   stage: deploy
   variables:
     PACKAGE_FILE: ${NAME}_${CI_COMMIT_TAG}_${ARCHITECTURE}.deb
@@ -8,7 +8,7 @@
   - "mkdir -p deploy/data/usr/bin"
   - "cp -r deploy/apt deploy/data/DEBIAN"
   - "cp deploy/systemd/${NAME}.service deploy/data/lib/systemd/system"
-  - "cp ${NAME}-${ARCHITECTURE} deploy/data/usr/bin/${NAME}"
+  - "cp ${NAME}-linux-${ARCHITECTURE} deploy/data/usr/bin/${NAME}"
   - "md5deep -lr deploy/data | grep -v DEBIAN | sed \"s+deploy/data/++g\" | sort -k2 > deploy/data/DEBIAN/md5sums"
   - "sed -i \"s+^Version:.*+Version: ${CI_COMMIT_TAG}+g\" deploy/data/DEBIAN/control"
   - "sed -i \"s+^Architecture:.*+Architecture: ${ARCHITECTURE}+g\" deploy/data/DEBIAN/control"
@@ -26,7 +26,7 @@
     when: always
   - when: never
 
-.deploy_opkg:
+.deploy_openwrt:
   stage: deploy
   variables:
     PACKAGE_FILE: ${NAME}_${CI_COMMIT_TAG}_${ARCHITECTURE}.ipk
@@ -37,7 +37,7 @@
   - "mkdir -p deploy/data/usr/bin"
   - "cp -r deploy/luci/* deploy/data"
   - "cp deploy/procd/${NAME} deploy/data/etc/init.d"
-  - "cp ${NAME}-${ARCHITECTURE} deploy/data/usr/bin/${NAME}"
+  - "cp ${NAME}-openwrt-${ARCHITECTURE} deploy/data/usr/bin/${NAME}"
   - "sed -i \"s+^Version:.*+Version: ${CI_COMMIT_TAG}+g\" deploy/opkg/control"
   - "sed -i \"s+^Architecture:.*+Architecture: ${ARCHITECTURE}+g\" deploy/opkg/control"
   - "echo \"2.0\" > debian-binary"
@@ -62,13 +62,48 @@
     when: always
   - when: never
 
+.deploy_entware:
+  stage: deploy
+  variables:
+    PACKAGE_FILE: ${NAME}_${CI_COMMIT_TAG}_${ARCHITECTURE}.ipk
+    FEED_DIR: /var/www/entware.homed.su/${ARCHITECTURE}
+  script:
+  - "[[ -n ${PACKAGE_EXTRA} ]] && sh -c \"${PACKAGE_EXTRA}\""
+  - "[[ -f deploy/data/etc/homed/${NAME}.conf ]] && sed -i -e \"s\\=/opt/${NAME}\\=/opt/var/lib/${NAME}\\g\" -e \"s\\=/usr/share\\=/opt/share\\g\" -e \"s\\=/var/log\\=/opt/var/log\\g\" deploy/data/etc/homed/${NAME}.conf && mkdir -p deploy/data/opt/etc/homed && mv deploy/data/etc/homed/${NAME}.conf deploy/data/opt/etc/homed && rm -r deploy/data/etc"
+  - "[[ -d deploy/data/usr/share/${NAME} ]] && mkdir -p deploy/data/opt/share && mv deploy/data/usr/share/${NAME} deploy/data/opt/share && rm -r deploy/data/usr"
+  - "[[ -d deploy/data/opt/${NAME} ]] && mkdir -p deploy/data/opt/var/lib && mv deploy/data/opt/${NAME} deploy/data/opt/var/lib/${NAME}"
+  - "mkdir -p deploy/data/opt/etc/init.d"
+  - "mkdir -p deploy/data/opt/bin"
+  - "mv deploy/entware/S* deploy/data/opt/etc/init.d"
+  - "cp ${NAME}-entware-${ARCHITECTURE} deploy/data/opt/bin/${NAME}"
+  - "sed -i \"s+^Version:.*+Version: ${CI_COMMIT_TAG}+g\" deploy/entware/control"
+  - "sed -i \"s+^Architecture:.*+Architecture: ${ARCHITECTURE}+g\" deploy/entware/control"
+  - "echo \"2.0\" > debian-binary"
+  - "chmod +x deploy/data/opt/etc/init.d/*"
+  - "fakeroot tar -czf control.tar.gz -C deploy/entware ."
+  - "fakeroot tar -czf data.tar.gz -C deploy/data ."
+  - "fakeroot tar -czf ${PACKAGE_FILE} control.tar.gz data.tar.gz debian-binary"
+  - "mkdir -p ${FEED_DIR}"
+  - "rm -f ${FEED_DIR}/${NAME}_*"
+  - "cp ${PACKAGE_FILE} ${FEED_DIR}"
+  - "/opt/scripts/opkgIndex.sh ${FEED_DIR} > ${FEED_DIR}/Packages"
+  - "gzip -fk ${FEED_DIR}/Packages"
+  artifacts:
+    paths:
+    - ${PACKAGE_FILE}
+    expire_in: never
+  rules:
+  - if: $CI_COMMIT_TAG =~ /^\d.\d.\d+$/
+    when: always
+  - when: never
+
 Deploy Docker Images:
   stage: deploy
   script:
   - "[[ -n ${DOCKER_EXTRA} ]] && sh -c \"${DOCKER_EXTRA}\""
-  - "cp ${NAME}-amd64 deploy/docker/${NAME}-amd64"
-  - "cp ${NAME}-aarch64 deploy/docker/${NAME}-arm64"
-  - "cp ${NAME}-armhf deploy/docker/${NAME}-arm"
+  - "cp ${NAME}-linux-amd64 deploy/docker/${NAME}-amd64"
+  - "cp ${NAME}-linux-aarch64 deploy/docker/${NAME}-arm64"
+  - "cp ${NAME}-linux-armhf deploy/docker/${NAME}-arm"
   - "docker buildx create --driver-opt network=host --name job_${CI_JOB_ID} --use"
   - "docker buildx build --platform linux/arm64,linux/arm/v7,linux/amd64 --push --tag 127.0.0.1:5000/${NAME}:${CI_COMMIT_TAG} --tag 127.0.0.1:5000/${NAME}:latest deploy/docker/"
   - "docker buildx prune -af"
@@ -78,47 +113,71 @@ Deploy Docker Images:
     when: always
   - when: never
 
-Deploy APT Package (amd64):
-  extends: .deploy_apt
+Clean Up Linux Packages:
+  stage: deploy
+  script:
+  - "/opt/scripts/aptRemove.sh ${NAME}"
+  rules:
+  - if: $CI_COMMIT_TAG =~ /^\d.\d.\d+$/
+    when: always
+  - when: never
+
+Deploy Linux Package (amd64):
+  extends: .deploy_linux
   variables:
     ARCHITECTURE: amd64
 
-Deploy APT Package (aarch64):
-  extends: .deploy_apt
+Deploy Linux Package (aarch64):
+  extends: .deploy_linux
   variables:
     ARCHITECTURE: aarch64
 
-Deploy APT Package (arm64):
-  extends: .deploy_apt
+Deploy Linux Package (arm64):
+  extends: .deploy_linux
   variables:
     ARCHITECTURE: arm64
 
-Deploy APT Package (armhf):
-  extends: .deploy_apt
+Deploy Linux Package (armhf):
+  extends: .deploy_linux
   variables:
     ARCHITECTURE: armhf
 
 Deploy OpenWRT Package (aarch64_generic):
-  extends: .deploy_opkg
+  extends: .deploy_openwrt
   variables:
     ARCHITECTURE: aarch64_generic
 
 Deploy OpenWRT Package (arm_cortex-a7_neon-vfpv4):
-  extends: .deploy_opkg
+  extends: .deploy_openwrt
   variables:
     ARCHITECTURE: arm_cortex-a7_neon-vfpv4
 
 Deploy OpenWRT Package (arm_cortex-a9_neon):
-  extends: .deploy_opkg
+  extends: .deploy_openwrt
   variables:
     ARCHITECTURE: arm_cortex-a9_neon
 
 Deploy OpenWRT Package (mips_24kc):
-  extends: .deploy_opkg
+  extends: .deploy_openwrt
   variables:
     ARCHITECTURE: mips_24kc
 
 Deploy OpenWRT Package (mipsel_24kc):
-  extends: .deploy_opkg
+  extends: .deploy_openwrt
   variables:
     ARCHITECTURE: mipsel_24kc
+
+Deploy Keenetic NDMS Package (aarch64-3.10):
+  extends: .deploy_entware
+  variables:
+    ARCHITECTURE: aarch64-3.10
+
+Deploy Keenetic NDMS Package (mips-3.4):
+  extends: .deploy_entware
+  variables:
+    ARCHITECTURE: mips-3.4
+
+Deploy Keenetic NDMS Package (mipsel-3.4):
+  extends: .deploy_entware
+  variables:
+    ARCHITECTURE: mipsel-3.4

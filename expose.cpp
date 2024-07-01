@@ -44,7 +44,7 @@ QJsonObject SensorObject::request(void)
     QList <QString> valueTemplate = {QString("value_json.%1").arg(m_name)}, forceUpdate = {"action", "event", "scene"};
     QJsonObject json;
 
-    if (m_name == "battery" || options.value("diagnostic").toBool())
+    if (m_name == "battery" || m_name == "batteryStatus" || options.value("diagnostic").toBool())
         json.insert("entity_category",              "diagnostic");
 
     if (options.contains("class"))
