@@ -42,6 +42,7 @@
   "power":                      {"type": "sensor", "class": "power", "state": "measurement", "unit": "W", "round": 2},
   "presenceStatus":             {"type": "sensor", "icon": "mdi:home"},
   "pressure":                   {"type": "sensor", "class": "pressure", "state": "measurement", "unit": "kPa", "round": 1},
+  "producedEnergy":             {"type": "sensor", "class": "energy", "state": "total_increasing", "unit": "kWh", "round": 2},
   "scene":                      {"type": "sensor", "icon": "mdi:gesture-tap-button"},
   "smokeConcentration":         {"type": "sensor", "unit": "ppm", "icon": "mdi:smoke"},
   "staticDwellAlarm":           {"type": "sensor", "icon": "mdi:bell"},
