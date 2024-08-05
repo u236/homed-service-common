@@ -38,8 +38,8 @@ void AbstractDeviceObject::publishExposes(HOMEd *controller, const QString &addr
                     if (!id.isEmpty())
                         name.append(" ").append(endpointName.contains(id) ? endpointName.value(id).toString() : id);
 
-                    expose->setStateTopic(controller->mqttTopic("fd/%1/%2").arg(controller->serviceName(), topic));
-                    expose->setCommandTopic(controller->mqttTopic("td/%1/%2").arg(controller->serviceName(), topic));
+                    expose->setStateTopic(controller->mqttTopic("fd/%1/%2").arg(controller->serviceTopic(), topic));
+                    expose->setCommandTopic(controller->mqttTopic("td/%1/%2").arg(controller->serviceTopic(), topic));
 
                     json = expose->request();
 
@@ -50,8 +50,8 @@ void AbstractDeviceObject::publishExposes(HOMEd *controller, const QString &addr
                     if (!m_description.isEmpty())
                         identity.insert("model", m_description);
 
-                    availability.append(QJsonObject {{"topic", controller->mqttTopic("device/%1/%2").arg(controller->serviceName(), names ? m_name : address)}, {"value_template", "{{ value_json.status }}"}});
-                    availability.append(QJsonObject {{"topic", controller->mqttTopic("service/%1").arg(controller->serviceName())}, {"value_template", "{{ value_json.status }}"}});
+                    availability.append(QJsonObject {{"topic", controller->mqttTopic("device/%1/%2").arg(controller->serviceTopic(), names ? m_name : address)}, {"value_template", "{{ value_json.status }}"}});
+                    availability.append(QJsonObject {{"topic", controller->mqttTopic("service/%1").arg(controller->serviceTopic())}, {"value_template", "{{ value_json.status }}"}});
 
                     json.insert("availability", availability);
                     json.insert("availability_mode", "all");
@@ -91,7 +91,7 @@ void AbstractDeviceObject::publishExposes(HOMEd *controller, const QString &addr
                             json.insert("device", identity);
                             json.insert("payload", event.at(0));
                             json.insert("subtype", subtype);
-                            json.insert("topic", controller->mqttTopic("fd/%1/%2").arg(controller->serviceName(), topic));
+                            json.insert("topic", controller->mqttTopic("fd/%1/%2").arg(controller->serviceTopic(), topic));
                             json.insert("type", expose->name());
                             json.insert("value_template", QString("{{ value_json.%1 }}").arg(expose->name()));
                         }
@@ -147,7 +147,7 @@ void AbstractDeviceObject::publishExposes(HOMEd *controller, const QString &addr
         }
     }
 
-    controller->mqttPublish(controller->mqttTopic("expose/%1/%2").arg(controller->serviceName(), names ? m_name : address), QJsonObject::fromVariantMap(data), true);
+    controller->mqttPublish(controller->mqttTopic("expose/%1/%2").arg(controller->serviceTopic(), names ? m_name : address), QJsonObject::fromVariantMap(data), true);
 }
 
 QVariant AbstractMetaObject::option(const QString &name, const QVariant &defaultValue)
