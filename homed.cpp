@@ -9,7 +9,7 @@ HOMEd::HOMEd(const QString &configFile, bool multiple) : QObject(nullptr), m_con
     QDate date = QDate::currentDate();
     QString instance;
 
-    m_config = new QSettings(QFileInfo::exists(configFile) ? configFile : QString("/etc/homed/%1.conf").arg(QCoreApplication::applicationName()), QSettings::IniFormat, this);
+    m_config = new QSettings(configFile.isEmpty() ? QString("/etc/homed/%1.conf").arg(QCoreApplication::applicationName()) : configFile, QSettings::IniFormat, this);
     m_watcher->addPath(m_config->fileName());
 
     setLogEnabled(m_config->value("log/enabled", false).toBool());
