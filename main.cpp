@@ -12,7 +12,7 @@ static void signalHandler(int)
 int main(int argc, char **argv)
 {
     QCoreApplication application(argc, argv);
-    QLockFile lock(QString("%1%2%3.lock").arg(QDir::tempPath(), QDir::separator(), application.applicationName()));
+    QLockFile lock(QString("%1/%2.lock").arg(QDir::tempPath(), application.applicationName()));
     QString configFile;
 
     if (application.arguments().value(1) == "-v")
