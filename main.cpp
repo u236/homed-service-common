@@ -48,7 +48,7 @@ int main(int argc, char **argv)
 
     if (!configFile.isEmpty() && !file.open(QFile::ReadOnly))
     {
-        printf("startup failed, unable to open configurantion file \"%s\"\n", configFile.toUtf8().constData());
+        printf("Startup failed, unable to open configurantion file \"%s\"\n", configFile.toUtf8().constData());
         return EXIT_FAILURE;
     }
 
@@ -74,6 +74,6 @@ int main(int argc, char **argv)
         return result;
     }
 
-    printf("startup failed, unable to create lock file\n");
+    printf("Startup failed, unable to create lock file \"%s\"\n", lockFile.toUtf8().constData());
     return EXIT_FAILURE;
 }
