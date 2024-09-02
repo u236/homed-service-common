@@ -13,6 +13,7 @@ HOMEd::HOMEd(const QString &configFile, bool multiple) : QObject(nullptr), m_con
     m_watcher->addPath(m_config->fileName());
 
     setLogEnabled(m_config->value("log/enabled", false).toBool());
+    setLogTimestams(m_config->value("log/timestamps", false).toBool());
     setLogFile(m_config->value("log/file", "/var/log/homed.log").toString());
     qInstallMessageHandler(logger);
 
