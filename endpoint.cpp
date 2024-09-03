@@ -25,7 +25,7 @@ void AbstractDeviceObject::publishExposes(HOMEd *controller, const QString &addr
 
                 if (!id.isEmpty())
                 {
-                    topic.append("/").append(id);
+                    topic.append('/').append(id);
                     object.append(id);
                 }
 
@@ -36,7 +36,7 @@ void AbstractDeviceObject::publishExposes(HOMEd *controller, const QString &addr
                     name = abbreviation.contains(name) ? abbreviation.value(name) : name.replace(QRegExp("([A-Z0-9])"), " \\1").replace(0, 1, name.at(0).toUpper());
 
                     if (!id.isEmpty())
-                        name.append(" ").append(endpointName.contains(id) ? endpointName.value(id).toString() : id);
+                        name.append(0x20).append(endpointName.contains(id) ? endpointName.value(id).toString() : id);
 
                     expose->setStateTopic(controller->mqttTopic("fd/%1/%2").arg(controller->serviceTopic(), topic));
                     expose->setCommandTopic(controller->mqttTopic("td/%1/%2").arg(controller->serviceTopic(), topic));
@@ -78,9 +78,9 @@ void AbstractDeviceObject::publishExposes(HOMEd *controller, const QString &addr
                         if (!id.isEmpty())
                         {
                             if (endpointName.contains(id))
-                                subtype.prepend(" ").prepend(endpointName.value(id).toString());
+                                subtype.prepend(0x20).prepend(endpointName.value(id).toString());
                             else
-                                subtype.append(" ").append(id);
+                                subtype.append(0x20).append(id);
 
                             event.append(id);
                         }

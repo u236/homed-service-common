@@ -34,7 +34,7 @@ void setLogFile(const QString &value)
 
 void logger(QtMsgType type, const QMessageLogContext &, const QString &message)
 {
-    QString service = QCoreApplication::applicationName().split("-").last(), timestamp = QDateTime::currentDateTime().toString("yyyy.MM.dd hh:mm:ss.zzz"), data = QString("(%1) %2").arg(typeString(type), service.append(':').leftJustified(12));
+    QString service = QCoreApplication::applicationName().split('-').last(), timestamp = QDateTime::currentDateTime().toString("yyyy.MM.dd hh:mm:ss.zzz"), data = QString("(%1) %2").arg(typeString(type), service.append(':').leftJustified(12));
 
     data.append(message.front().toUpper());
     data.append(message.midRef(1));
@@ -42,9 +42,9 @@ void logger(QtMsgType type, const QMessageLogContext &, const QString &message)
     if (enabled && file.open(QIODevice::WriteOnly | QIODevice::Append))
     {
         QTextStream stream(&file);
-        stream << (timestamps ? QString("%1 %2").arg(timestamp, data) : data) << Qt::endl;
+        stream << QString("%1 %2").arg(timestamp, data) << Qt::endl;
         file.close();
     }
 
-    std::cout << QString("%1 %2").arg(timestamp, data).toStdString() << std::endl;
+    std::cout << (timestamps ? QString("%1 %2").arg(timestamp, data) : data).toStdString() << std::endl;
 }

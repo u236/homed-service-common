@@ -13,7 +13,7 @@ HOMEd::HOMEd(const QString &configFile, bool multiple) : QObject(nullptr), m_con
     m_watcher->addPath(m_config->fileName());
 
     setLogEnabled(m_config->value("log/enabled", false).toBool());
-    setLogTimestams(m_config->value("log/timestamps", false).toBool());
+    setLogTimestams(m_config->value("log/timestamps", true).toBool());
     setLogFile(m_config->value("log/file", "/var/log/homed.log").toString());
     qInstallMessageHandler(logger);
 
@@ -23,13 +23,13 @@ HOMEd::HOMEd(const QString &configFile, bool multiple) : QObject(nullptr), m_con
     m_mqttPrefix = m_config->value("mqtt/prefix", "homed").toString();
     instance = m_config->value("mqtt/instance").toString();
 
-    m_serviceTopic = QCoreApplication::applicationName().split("-").last();
+    m_serviceTopic = QCoreApplication::applicationName().split('-').last();
     m_uniqueId = QString("homed-%1_%2").arg(m_serviceTopic, m_mqttPrefix);
 
     if (multiple && !instance.isEmpty())
     {
-        m_serviceTopic.append("/").append(instance);
-        m_uniqueId.append("_").append(instance);
+        m_serviceTopic.append('/').append(instance);
+        m_uniqueId.append('_').append(instance);
     }
 
     m_mqtt->setHostname(m_config->value("mqtt/host", "localhost").toString());
