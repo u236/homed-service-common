@@ -22,12 +22,12 @@ class HOMEd : public QObject
 
 public:
 
-    HOMEd(const QString &configFile);
+    HOMEd(const QString &configFile, bool multiple = false);
 
     inline QSettings *getConfig(void) { return m_config; }
-    inline QString serviceName(void) { return m_serviceName; }
     inline QString mqttPrefix(void) { return m_mqttPrefix; }
-    inline QString uniqueId(void) { return m_uniqueId; }
+    inline QString serviceTopic(void) { return m_serviceTopic; }
+    inline QString uniqueId(void) { return m_uniqueId; }    
     inline bool mqttStatus(void) { return m_connected; }
 
     void mqttSubscribe(const QString &topic);
@@ -42,7 +42,7 @@ public:
 
 private:
 
-    QString m_serviceName, m_mqttPrefix, m_uniqueId;
+    QString m_mqttPrefix, m_serviceTopic, m_uniqueId;
     bool m_connected;
 
     QMqttClient *m_mqtt;

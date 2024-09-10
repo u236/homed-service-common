@@ -59,6 +59,7 @@
   - "fakeroot tar -czf control.tar.gz -C deploy/entware ."
   - "fakeroot tar -czf data.tar.gz -C deploy/data ."
   - "fakeroot tar -czf ${PACKAGE_FILE} control.tar.gz data.tar.gz debian-binary"
+  - "mv deploy/data/opt deploy/data/usr"
   - "mkdir -p ${FEED_DIR}"
   - "rm -f ${FEED_DIR}/homed-common_*"
   - "cp ${PACKAGE_FILE} ${FEED_DIR}"

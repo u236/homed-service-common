@@ -7,6 +7,9 @@ SOURCES += \
     $$PWD/logger.cpp \
     $$PWD/main.cpp
 
+DISTFILES += \
+    $$PWD/deploy/data/usr/share/homed-common/expose.json
+
 QT -= gui
 QT += mqtt
 

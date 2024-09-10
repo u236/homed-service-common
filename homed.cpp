@@ -4,30 +4,40 @@
 #include "homed.h"
 #include "logger.h"
 
-HOMEd::HOMEd(const QString &configFile) : QObject(nullptr), m_connected(false), m_mqtt(new QMqttClient(this)), m_elapsedTimer(new QElapsedTimer), m_reconnectTimer(new QTimer(this)), m_watcher(new QFileSystemWatcher(this))
+HOMEd::HOMEd(const QString &configFile, bool multiple) : QObject(nullptr), m_connected(false), m_mqtt(new QMqttClient(this)), m_elapsedTimer(new QElapsedTimer), m_reconnectTimer(new QTimer(this)), m_watcher(new QFileSystemWatcher(this))
 {
     QDate date = QDate::currentDate();
+    QString instance;
 
-    m_config = new QSettings(QFileInfo::exists(configFile) ? configFile : QString("/etc/homed/%1.conf").arg(QCoreApplication::applicationName()), QSettings::IniFormat, this);
+    m_config = new QSettings(configFile.isEmpty() ? QString("/etc/homed/%1.conf").arg(QCoreApplication::applicationName()) : configFile, QSettings::IniFormat, this);
     m_watcher->addPath(m_config->fileName());
 
     setLogEnabled(m_config->value("log/enabled", false).toBool());
+    setLogTimestams(m_config->value("log/timestamps", true).toBool());
     setLogFile(m_config->value("log/file", "/var/log/homed.log").toString());
     qInstallMessageHandler(logger);
 
     if (date > QDate(date.year(), 12, 23) || date < QDate(date.year(), 1, 15))
         logInfo << "Merry Christmas and a Happy New Year!" << "\xF0\x9F\x8E\x81\xF0\x9F\x8E\x84\xF0\x9F\x8D\xBA";
 
-    m_serviceName = QCoreApplication::applicationName().split("-").last();
     m_mqttPrefix = m_config->value("mqtt/prefix", "homed").toString();
-    m_uniqueId = QString("homed-%1_%2").arg(m_serviceName, m_mqttPrefix);
+    instance = m_config->value("mqtt/instance").toString();
+
+    m_serviceTopic = QCoreApplication::applicationName().split('-').last();
+    m_uniqueId = QString("homed-%1_%2").arg(m_serviceTopic, m_mqttPrefix);
+
+    if (multiple && !instance.isEmpty())
+    {
+        m_serviceTopic.append('/').append(instance);
+        m_uniqueId.append('_').append(instance);
+    }
 
     m_mqtt->setHostname(m_config->value("mqtt/host", "localhost").toString());
     m_mqtt->setPort(static_cast <quint16> (m_config->value("mqtt/port", 1883).toInt()));
     m_mqtt->setUsername(m_config->value("mqtt/username").toString());
     m_mqtt->setPassword(m_config->value("mqtt/password").toString());
 
-    m_mqtt->setWillTopic(mqttTopic("service/%1").arg(m_serviceName));
+    m_mqtt->setWillTopic(mqttTopic("service/%1").arg(m_serviceTopic));
     m_mqtt->setWillMessage(QJsonDocument(QJsonObject {{"status", "offline"}}).toJson(QJsonDocument::Compact));
 
     connect(m_mqtt, &QMqttClient::connected, this, &HOMEd::connected, Qt::QueuedConnection);
@@ -92,7 +102,7 @@ void HOMEd::mqttPublishDiscovery(const QString &name, const QString &version, co
 
         if (i)
         {
-            json.insert("availability_topic", mqttTopic("service/%1").arg(m_serviceName));
+            json.insert("availability_topic", mqttTopic("service/%1").arg(m_serviceTopic));
             json.insert("availability_template", "{{ value_json.status }}");
         }
 
@@ -106,7 +116,7 @@ void HOMEd::mqttPublishDiscovery(const QString &name, const QString &version, co
             case 0: // connectivity
                 component = "binary_sensor";
                 json.insert("device_class", "connectivity");
-                json.insert("state_topic", mqttTopic("service/%1").arg(m_serviceName));
+                json.insert("state_topic", mqttTopic("service/%1").arg(m_serviceTopic));
                 json.insert("value_template", "{{ value_json.status }}");
                 json.insert("payload_on", "online");
                 json.insert("payload_off", "offline");
@@ -115,22 +125,22 @@ void HOMEd::mqttPublishDiscovery(const QString &name, const QString &version, co
             case 1: // version
                 component = "sensor";
                 json.insert("icon", "mdi:tag");
-                json.insert("state_topic", mqttTopic("status/%1").arg(m_serviceName));
+                json.insert("state_topic", mqttTopic("status/%1").arg(m_serviceTopic));
                 json.insert("value_template", "{{ value_json.version }}");
                 break;
 
             case 2: // restartService
                 component = "button";
                 json.insert("icon", "mdi:restart");
-                json.insert("command_topic", mqttTopic("command/%1").arg(m_serviceName));
+                json.insert("command_topic", mqttTopic("command/%1").arg(m_serviceTopic));
                 json.insert("payload_press", "{\"action\": \"restartService\"}");
                 break;
 
             case 3: // permitJoin
                 component = "switch";
                 json.insert("icon", "mdi:human-greeting");
-                json.insert("state_topic", mqttTopic("status/%1").arg(m_serviceName));
-                json.insert("command_topic", mqttTopic("command/%1").arg(m_serviceName));
+                json.insert("state_topic", mqttTopic("status/%1").arg(m_serviceTopic));
+                json.insert("command_topic", mqttTopic("command/%1").arg(m_serviceTopic));
                 json.insert("value_template", "{{ value_json.permitJoin }}");
                 json.insert("state_on", true);
                 json.insert("state_off", false);
@@ -145,7 +155,7 @@ void HOMEd::mqttPublishDiscovery(const QString &name, const QString &version, co
 
 void HOMEd::mqttPublishStatus(bool online)
 {
-    mqttPublish(mqttTopic("service/%1").arg(m_serviceName), {{"status", online ? "online" : "offline"}}, true);
+    mqttPublish(mqttTopic("service/%1").arg(m_serviceTopic), {{"status", online ? "online" : "offline"}}, true);
 }
 
 QString HOMEd::mqttTopic(const QString &topic)
@@ -156,7 +166,7 @@ QString HOMEd::mqttTopic(const QString &topic)
 void HOMEd::connected(void)
 {
     m_connected = true;
-    logInfo << "MQTT connected";
+    logInfo << "MQTT connected to" << QString("%1:%2").arg(m_mqtt->hostname()).arg(m_mqtt->port());
     mqttConnected();
 }
 

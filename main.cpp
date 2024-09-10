@@ -11,20 +11,53 @@ static void signalHandler(int)
 
 int main(int argc, char **argv)
 {
+    QList <QString> list = {"-c", "-l"};
     QCoreApplication application(argc, argv);
-    QLockFile lock(QString("%1%2%3.lock").arg(QDir::tempPath(), QDir::separator(), application.applicationName()));
-    QString configFile;
+    QString configFile, lockFile;
+    QFile file;
 
-    if (application.arguments().value(1) == "-v")
+    if (application.arguments().contains("-h"))
+    {
+        printf("\n"
+               "  -c <file>   use the specified configuraton file\n"
+               "  -l <file>   use the specified lock file\n"
+               "  -f          force start (ignore lock file)\n"
+               "  -v          print application version\n"
+               "  -h          print this help\n"
+               "\n");
+
+        return EXIT_SUCCESS;
+    }
+
+    if (application.arguments().contains("-v"))
     {
         printf("%s %s\n", application.applicationName().toUtf8().constData(), SERVICE_VERSION);
         return EXIT_SUCCESS;
     }
 
-    if (application.arguments().value(1) == "-c")
-        configFile = application.arguments().value(2);
+    for (int i = 0; i < argc; i++)
+    {
+        switch (list.indexOf(application.arguments().value(i)))
+        {
+            case 0: configFile = application.arguments().value(++i); break;
+            case 1: lockFile = application.arguments().value(++i); break;
+        }
+    }
 
-    if (lock.tryLock(1000))
+    file.setFileName(configFile);
+
+    if (!configFile.isEmpty() && !file.open(QFile::ReadOnly))
+    {
+        printf("Startup failed, unable to open configurantion file \"%s\"\n", configFile.toUtf8().constData());
+        return EXIT_FAILURE;
+    }
+
+    file.close();
+
+    if (lockFile.isEmpty())
+        lockFile = QString("%1/%2.lock").arg(QDir::tempPath(), application.applicationName());
+
+    if (application.arguments().contains("-f") || QLockFile(lockFile).tryLock(1000))
     {
         int result = EXIT_RESTART;
 
@@ -41,6 +74,6 @@ int main(int argc, char **argv)
         return result;
     }
 
-    printf("Service already running\n");
+    printf("Startup failed, unable to create lock file \"%s\"\n", lockFile.toUtf8().constData());
     return EXIT_FAILURE;
 }
