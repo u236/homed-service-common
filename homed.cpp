@@ -97,11 +97,11 @@ void HOMEd::mqttPublishDiscovery(const QString &name, const QString &version, co
 
     for (int i = 0; i < list.count(); i++)
     {
-        if ((i == 2 && !m_interval) || (i == 4 && !permitJoin))
-            continue;
-
         QString component, item = list.at(i);
         QJsonObject json;
+
+        if ((i == 2 && !m_interval) || (i == 4 && !permitJoin))
+            continue;
 
         if (i)
         {
@@ -135,7 +135,6 @@ void HOMEd::mqttPublishDiscovery(const QString &name, const QString &version, co
             case 2: // lastSeen
                 component = "sensor";
                 json.insert("device_class", "timestamp");
-                json.insert("enabled_by_default", true);
                 json.insert("icon", "mdi:clock");
                 json.insert("state_topic", mqttTopic("service/%1").arg(m_serviceTopic));
                 json.insert("value_template", "{{ value_json.timestamp | timestamp_local }}");
