@@ -87,11 +87,8 @@ void HOMEd::mqttPublishString(const QString &topic, const QString &message, bool
 
 void HOMEd::mqttPublishDiscovery(const QString &name, const QString &version, const QString &haPrefix, bool permitJoin)
 {
-    QList <QString> list = {"connectivity", "version", "restartService"};
+    QList <QString> list = {"connectivity", "version", "lastSeen", "restartService", "permitJoin"};
     QJsonObject identity;
-
-    if (permitJoin)
-        list.append("permitJoin");
 
     identity.insert("identifiers", QJsonArray {m_uniqueId});
     identity.insert("name", QString("HOMEd %1 (%2)").arg(name, m_mqttPrefix));
@@ -103,6 +100,9 @@ void HOMEd::mqttPublishDiscovery(const QString &name, const QString &version, co
         QString component, item = list.at(i);
         QJsonObject json;
 
+        if ((i == 2 && !m_interval) || (i == 4 && !permitJoin))
+            continue;
+
         if (i)
         {
             json.insert("availability_topic", mqttTopic("service/%1").arg(m_serviceTopic));
@@ -110,7 +110,7 @@ void HOMEd::mqttPublishDiscovery(const QString &name, const QString &version, co
         }
 
         json.insert("device", identity);
-        json.insert("entity_category", i < 2 ? "diagnostic" : "config");
+        json.insert("entity_category", i < 3 ? "diagnostic" : "config");
         json.insert("name", QString(item).replace(QRegExp("([A-Z])"), " \\1").replace(0, 1, item.at(0).toUpper()));
         json.insert("unique_id", QString("%1_%2").arg(m_uniqueId, item));
 
@@ -132,14 +132,22 @@ void HOMEd::mqttPublishDiscovery(const QString &name, const QString &version, co
                 json.insert("value_template", "{{ value_json.version }}");
                 break;
 
-            case 2: // restartService
+            case 2: // lastSeen
+                component = "sensor";
+                json.insert("device_class", "timestamp");
+                json.insert("icon", "mdi:clock");
+                json.insert("state_topic", mqttTopic("service/%1").arg(m_serviceTopic));
+                json.insert("value_template", "{{ value_json.timestamp | timestamp_local }}");
+                break;
+
+            case 3: // restartService
                 component = "button";
                 json.insert("icon", "mdi:restart");
                 json.insert("command_topic", mqttTopic("command/%1").arg(m_serviceTopic));
                 json.insert("payload_press", "{\"action\": \"restartService\"}");
                 break;
 
-            case 3: // permitJoin
+            case 4: // permitJoin
                 component = "switch";
                 json.insert("icon", "mdi:human-greeting");
                 json.insert("state_topic", mqttTopic("status/%1").arg(m_serviceTopic));
