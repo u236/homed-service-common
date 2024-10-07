@@ -137,7 +137,7 @@ void HOMEd::mqttPublishDiscovery(const QString &name, const QString &version, co
                 json.insert("device_class", "timestamp");
                 json.insert("icon", "mdi:clock");
                 json.insert("state_topic", mqttTopic("service/%1").arg(m_serviceTopic));
-                json.insert("value_template", "{{ value_json.timestamp | timestamp_local }}");
+                json.insert("value_template", "{{ value_json.timestamp | is_defined | timestamp_local }}");
                 break;
 
             case 3: // restartService
