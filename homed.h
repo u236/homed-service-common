@@ -43,11 +43,12 @@ public:
 private:
 
     QString m_mqttPrefix, m_serviceTopic, m_uniqueId;
+    quint32 m_interval;
     bool m_connected;
 
     QMqttClient *m_mqtt;
     QElapsedTimer *m_elapsedTimer;
-    QTimer *m_reconnectTimer;
+    QTimer *m_statusTimer, *m_reconnectTimer;
 
     QSettings *m_config;
     QFileSystemWatcher *m_watcher;
@@ -64,6 +65,7 @@ private slots:
     void connected(void);
     void disconnected(void);
     void reconnect(void);
+    void publishStatus(void);
     void fileChanged(void);
 
 };

@@ -4,7 +4,7 @@
 #include "homed.h"
 #include "logger.h"
 
-HOMEd::HOMEd(const QString &configFile, bool multiple) : QObject(nullptr), m_connected(false), m_mqtt(new QMqttClient(this)), m_elapsedTimer(new QElapsedTimer), m_reconnectTimer(new QTimer(this)), m_watcher(new QFileSystemWatcher(this))
+HOMEd::HOMEd(const QString &configFile, bool multiple) : QObject(nullptr), m_connected(false), m_mqtt(new QMqttClient(this)), m_elapsedTimer(new QElapsedTimer), m_statusTimer(new QTimer(this)), m_reconnectTimer(new QTimer(this)), m_watcher(new QFileSystemWatcher(this))
 {
     QDate date = QDate::currentDate();
     QString instance;
@@ -21,6 +21,7 @@ HOMEd::HOMEd(const QString &configFile, bool multiple) : QObject(nullptr), m_con
         logInfo << "Merry Christmas and a Happy New Year!" << "\xF0\x9F\x8E\x81\xF0\x9F\x8E\x84\xF0\x9F\x8D\xBA";
 
     m_mqttPrefix = m_config->value("mqtt/prefix", "homed").toString();
+    m_interval = static_cast <quint32> (m_config->value("mqtt/interval").toInt() * 1000);
     instance = m_config->value("mqtt/instance").toString();
 
     m_serviceTopic = QCoreApplication::applicationName().split('-').last();
@@ -45,11 +46,13 @@ HOMEd::HOMEd(const QString &configFile, bool multiple) : QObject(nullptr), m_con
     connect(m_mqtt, &QMqttClient::messageReceived, this, &HOMEd::mqttReceived, Qt::QueuedConnection);
 
     connect(m_reconnectTimer, &QTimer::timeout, this, &HOMEd::reconnect, Qt::QueuedConnection);
+    connect(m_statusTimer, &QTimer::timeout, this, &HOMEd::publishStatus, Qt::QueuedConnection);
     connect(m_watcher, &QFileSystemWatcher::fileChanged, this, &HOMEd::fileChanged, Qt::QueuedConnection);
 
     m_mqtt->connectToHost();
     m_elapsedTimer->start();
     m_reconnectTimer->setSingleShot(true);
+    m_statusTimer->setSingleShot(true);
 }
 
 void HOMEd::quit(void)
@@ -155,7 +158,17 @@ void HOMEd::mqttPublishDiscovery(const QString &name, const QString &version, co
 
 void HOMEd::mqttPublishStatus(bool online)
 {
-    mqttPublish(mqttTopic("service/%1").arg(m_serviceTopic), {{"status", online ? "online" : "offline"}}, true);
+    QJsonObject json = {{"status", online ? "online" : "offline"}};
+
+    if (online && m_interval)
+    {
+        if (!m_statusTimer->isActive())
+            m_statusTimer->start(m_interval);
+
+        json.insert("timestamp", QDateTime::currentSecsSinceEpoch());
+    }
+
+    mqttPublish(mqttTopic("service/%1").arg(m_serviceTopic), json, true);
 }
 
 QString HOMEd::mqttTopic(const QString &topic)
@@ -180,6 +193,11 @@ void HOMEd::disconnected(void)
 void HOMEd::reconnect(void)
 {
     m_mqtt->connectToHost();
+}
+
+void HOMEd::publishStatus(void)
+{
+    mqttPublishStatus();
 }
 
 void HOMEd::fileChanged(void)
