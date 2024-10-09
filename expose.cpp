@@ -45,7 +45,10 @@ QJsonObject SensorObject::request(void)
     QJsonObject json;
 
     if (forceUpdate.contains(m_name))
+    {
+        valueTemplate.append("is_defined");
         json.insert("force_update", true);
+    }
 
     if (options.contains("round"))
         valueTemplate.append(QString("round(%1)").arg(options.value("round").toInt()));
