@@ -3,9 +3,10 @@
 
 void GPIO::direction(const QString &gpio, Direction direction)
 {
+    QList <QString> list = gpio.split('|');
     QFile file;
     bool check;
-    int pin = gpio.toInt(&check);
+    int pin = list.value(0).toInt(&check);
 
     if (!check || pin < 0)
         return;
@@ -38,17 +39,21 @@ void GPIO::direction(const QString &gpio, Direction direction)
 
 void GPIO::setStatus(const QString &gpio, bool status)
 {
+    QList <QString> list = gpio.split('|');
     QFile file;
     bool check;
-    int pin = gpio.toInt(&check);
+    int pin = list.value(0).toInt(&check);
 
     if (check && pin < 0)
         return;
 
-    file.setFileName(check ? QString("/sys/class/gpio/gpio%1/value").arg(pin) : gpio);
+    file.setFileName(check ? QString("/sys/class/gpio/gpio%1/value").arg(pin) : list.value(0));
 
     if (!file.open(QFile::WriteOnly))
         return;
+
+    if (list.value(1) == "invert")
+        status = status ? false : true;
 
     file.write(status ? "1" : "0");
     file.close();
@@ -56,15 +61,16 @@ void GPIO::setStatus(const QString &gpio, bool status)
 
 bool GPIO::getStatus(const QString &gpio)
 {
+    QList <QString> list = gpio.split('|');
     QFile file;
     bool check;
-    int pin = gpio.toInt(&check);
+    int pin = list.value(0).toInt(&check);
     char status;
 
     if (check && pin < 0)
         return false;
 
-    file.setFileName(check ? QString("/sys/class/gpio/gpio%1/value").arg(pin) : gpio);
+    file.setFileName(check ? QString("/sys/class/gpio/gpio%1/value").arg(pin) : list.value(0));
 
     if (!file.open(QFile::ReadOnly))
         return false;
@@ -72,5 +78,5 @@ bool GPIO::getStatus(const QString &gpio)
     file.read(&status, sizeof(status));
     file.close();
 
-    return status != '0';
+    return list.value(1) == "invert" ? status == '0' : status != '0';
 }
