@@ -59,8 +59,9 @@ public slots:
 
 private slots:
 
-    virtual void mqttConnected(void) = 0;
-    virtual void mqttReceived(const QByteArray &message, const QMqttTopicName &topic) = 0;
+    virtual void mqttConnected(void) {};
+    virtual void mqttDisonnected(void) {};
+    virtual void mqttReceived(const QByteArray &, const QMqttTopicName &) {};
 
     void connected(void);
     void disconnected(void);

@@ -198,9 +198,14 @@ void HOMEd::connected(void)
 
 void HOMEd::disconnected(void)
 {
+    m_reconnectTimer->start(MQTT_RECONNECT_INTERVAL);
+
+    if (!m_connected)
+        return;
+
     m_connected = false;
     logWarning << "MQTT disconnected";
-    m_reconnectTimer->start(MQTT_RECONNECT_INTERVAL);
+    mqttDisonnected();
 }
 
 void HOMEd::reconnect(void)
