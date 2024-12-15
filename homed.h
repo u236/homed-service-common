@@ -44,7 +44,7 @@ private:
 
     QString m_mqttPrefix, m_serviceTopic, m_uniqueId;
     quint32 m_interval;
-    bool m_connected;
+    bool m_connected, m_first;
 
     QMqttClient *m_mqtt;
     QElapsedTimer *m_elapsedTimer;

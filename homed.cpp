@@ -4,7 +4,7 @@
 #include "homed.h"
 #include "logger.h"
 
-HOMEd::HOMEd(const QString &configFile, bool multiple) : QObject(nullptr), m_connected(false), m_mqtt(new QMqttClient(this)), m_elapsedTimer(new QElapsedTimer), m_statusTimer(new QTimer(this)), m_reconnectTimer(new QTimer(this)), m_watcher(new QFileSystemWatcher(this))
+HOMEd::HOMEd(const QString &configFile, bool multiple) : QObject(nullptr), m_connected(false), m_first(true), m_mqtt(new QMqttClient(this)), m_elapsedTimer(new QElapsedTimer), m_statusTimer(new QTimer(this)), m_reconnectTimer(new QTimer(this)), m_watcher(new QFileSystemWatcher(this))
 {
     QDate date = QDate::currentDate();
     QString instance;
@@ -200,10 +200,12 @@ void HOMEd::disconnected(void)
 {
     m_reconnectTimer->start(MQTT_RECONNECT_INTERVAL);
 
-    if (!m_connected)
+    if (!m_connected && !m_first)
         return;
 
     m_connected = false;
+    m_first = false;
+
     logWarning << "MQTT disconnected";
     mqttDisonnected();
 }
