@@ -28,7 +28,7 @@ QTime Sun::fromString(const QString &string)
     {
         case 0:  return m_sunrise.addSecs(offset * 60);
         case 1:  return m_sunset.addSecs(offset * 60);
-        default: return QTime::fromString(value, "hh:mm");
+        default: return QTime::fromString(value, "h:mm");
     }
 }
 
