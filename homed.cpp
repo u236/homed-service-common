@@ -207,7 +207,7 @@ void HOMEd::disconnected(void)
     m_first = false;
 
     logWarning << "MQTT disconnected";
-    mqttDisonnected();
+    mqttDisconnected();
 }
 
 void HOMEd::reconnect(void)
