@@ -22,12 +22,15 @@ class HOMEd : public QObject
 
 public:
 
-    HOMEd(const QString &configFile, bool multiple = false);
+    HOMEd(const QString &configFile, bool multiple = false, bool mqtt = true);
 
     inline QSettings *getConfig(void) { return m_config; }
     inline QString mqttPrefix(void) { return m_mqttPrefix; }
     inline QString serviceTopic(void) { return m_serviceTopic; }
     inline QString uniqueId(void) { return m_uniqueId; }    
+
+    inline void mqttSetWillTopic(const QString &value) { m_mqtt->setWillTopic(value); }
+    inline void mqttConnect(void) { m_mqtt->connectToHost(); }
     inline bool mqttStatus(void) { return m_connected; }
 
     void mqttSubscribe(const QString &topic);
@@ -42,16 +45,15 @@ public:
 
 private:
 
+    QMqttClient *m_mqtt;
+    QTimer *m_statusTimer, *m_reconnectTimer;
+
+    QFileSystemWatcher *m_watcher;
+    QSettings *m_config;
+
     QString m_mqttPrefix, m_serviceTopic, m_uniqueId;
     quint32 m_interval;
     bool m_connected, m_first;
-
-    QMqttClient *m_mqtt;
-    QElapsedTimer *m_elapsedTimer;
-    QTimer *m_statusTimer, *m_reconnectTimer;
-
-    QSettings *m_config;
-    QFileSystemWatcher *m_watcher;
 
 public slots:
 

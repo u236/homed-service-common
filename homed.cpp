@@ -4,7 +4,7 @@
 #include "homed.h"
 #include "logger.h"
 
-HOMEd::HOMEd(const QString &configFile, bool multiple) : QObject(nullptr), m_connected(false), m_first(true), m_mqtt(new QMqttClient(this)), m_elapsedTimer(new QElapsedTimer), m_statusTimer(new QTimer(this)), m_reconnectTimer(new QTimer(this)), m_watcher(new QFileSystemWatcher(this))
+HOMEd::HOMEd(const QString &configFile, bool multiple, bool mqtt) : QObject(nullptr), m_mqtt(new QMqttClient(this)), m_statusTimer(new QTimer(this)), m_reconnectTimer(new QTimer(this)), m_watcher(new QFileSystemWatcher(this)), m_connected(false), m_first(true)
 {
     QDate date = QDate::currentDate();
     QString instance;
@@ -40,6 +40,7 @@ HOMEd::HOMEd(const QString &configFile, bool multiple) : QObject(nullptr), m_con
 
     m_mqtt->setWillTopic(mqttTopic("service/%1").arg(m_serviceTopic));
     m_mqtt->setWillMessage(QJsonDocument(QJsonObject {{"status", "offline"}}).toJson(QJsonDocument::Compact));
+    m_mqtt->setWillRetain(true);
 
     connect(m_mqtt, &QMqttClient::connected, this, &HOMEd::connected, Qt::QueuedConnection);
     connect(m_mqtt, &QMqttClient::disconnected, this, &HOMEd::disconnected, Qt::QueuedConnection);
@@ -49,8 +50,9 @@ HOMEd::HOMEd(const QString &configFile, bool multiple) : QObject(nullptr), m_con
     connect(m_statusTimer, &QTimer::timeout, this, &HOMEd::publishStatus, Qt::QueuedConnection);
     connect(m_watcher, &QFileSystemWatcher::fileChanged, this, &HOMEd::fileChanged, Qt::QueuedConnection);
 
-    m_mqtt->connectToHost();
-    m_elapsedTimer->start();
+    if (mqtt)
+        m_mqtt->connectToHost();
+
     m_reconnectTimer->setSingleShot(true);
     m_statusTimer->setSingleShot(true);
 }
@@ -58,11 +60,8 @@ HOMEd::HOMEd(const QString &configFile, bool multiple) : QObject(nullptr), m_con
 void HOMEd::quit(void)
 {
     logInfo << "Goodbye!";
-
     mqttPublishStatus(false);
     m_mqtt->disconnectFromHost();
-
-    delete m_elapsedTimer;
 }
 
 void HOMEd::mqttSubscribe(const QString &topic)
