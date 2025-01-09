@@ -18,26 +18,22 @@ void AbstractDeviceObject::publishExposes(HOMEd *controller, const QString &addr
 
             if (haEnabled && expose->discovery())
             {
-                QString id = expose->multiple() ? QString::number(it.key()) : QString(), topic = names ? m_name : address;
+                QString id = expose->multiple() ? QString::number(it.key()) : QString(), topic = names ? m_name : address, name = expose->name();
                 QList <QString> object = {expose->name()};
                 QJsonObject json, identity;
                 QJsonArray availability;
 
+                name = abbreviation.contains(name) ? abbreviation.value(name) : name.replace(QRegExp("([A-Z0-9])"), " \\1").replace(0, 1, name.at(0).toUpper());
+
                 if (!id.isEmpty())
                 {
                     topic.append('/').append(id);
+                    name.append(0x20).append(endpointName.contains(id) ? endpointName.value(id).toString() : id);
                     object.append(id);
                 }
 
                 if (m_discovery && !remove)
                 {
-                    QString name = expose->name();
-
-                    name = abbreviation.contains(name) ? abbreviation.value(name) : name.replace(QRegExp("([A-Z0-9])"), " \\1").replace(0, 1, name.at(0).toUpper());
-
-                    if (!id.isEmpty())
-                        name.append(0x20).append(endpointName.contains(id) ? endpointName.value(id).toString() : id);
-
                     expose->setStateTopic(controller->mqttTopic("fd/%1/%2").arg(controller->serviceTopic(), topic));
                     expose->setCommandTopic(controller->mqttTopic("td/%1/%2").arg(controller->serviceTopic(), topic));
 
@@ -98,6 +94,22 @@ void AbstractDeviceObject::publishExposes(HOMEd *controller, const QString &addr
 
                         controller->mqttPublish(QString("%1/device_automation/%2/%3/config").arg(haPrefix, uniqueId, event.join('_')), json, true);
                     }
+
+                    json = QJsonObject();
+
+                    if (m_discovery && !remove)
+                    {
+                        json.insert("availability", availability);
+                        json.insert("availability_mode", "all");
+                        json.insert("device", identity);
+                        json.insert("event_types", QJsonArray::fromStringList(list));
+                        json.insert("name", name);
+                        json.insert("state_topic", controller->mqttTopic("fd/%1/%2").arg(controller->serviceTopic(), topic));
+                        json.insert("unique_id", QString("%1_%2").arg(uniqueId, object.join('_')));
+                        json.insert("value_template", QString("{% if value_json.%1 is defined %}{\"event_type\":\"{{ value_json.%1 }}\"}{% endif %}").arg(expose->name()));
+                    }
+
+                    controller->mqttPublish(QString("%1/event/%2/%3/config").arg(haPrefix, uniqueId, object.join('_')), json, true);
                 }
             }
 
