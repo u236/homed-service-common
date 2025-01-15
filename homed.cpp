@@ -4,7 +4,7 @@
 #include "homed.h"
 #include "logger.h"
 
-HOMEd::HOMEd(const QString &configFile, bool multiple, bool mqtt) : QObject(nullptr), m_mqtt(new QMqttClient(this)), m_statusTimer(new QTimer(this)), m_reconnectTimer(new QTimer(this)), m_watcher(new QFileSystemWatcher(this)), m_connected(false), m_first(true)
+HOMEd::HOMEd(const QString &configFile, bool multiple) : QObject(nullptr), m_mqtt(new QMqttClient(this)), m_statusTimer(new QTimer(this)), m_reconnectTimer(new QTimer(this)), m_watcher(new QFileSystemWatcher(this)), m_connected(false), m_first(true)
 {
     QDate date = QDate::currentDate();
     QString instance;
@@ -50,11 +50,10 @@ HOMEd::HOMEd(const QString &configFile, bool multiple, bool mqtt) : QObject(null
     connect(m_statusTimer, &QTimer::timeout, this, &HOMEd::publishStatus, Qt::QueuedConnection);
     connect(m_watcher, &QFileSystemWatcher::fileChanged, this, &HOMEd::fileChanged, Qt::QueuedConnection);
 
-    if (mqtt)
-        m_mqtt->connectToHost();
-
     m_reconnectTimer->setSingleShot(true);
     m_statusTimer->setSingleShot(true);
+
+    m_mqtt->connectToHost();
 }
 
 void HOMEd::quit(void)
