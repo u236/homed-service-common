@@ -120,13 +120,14 @@ protected:
     QString m_name;
     AbstractEndpointObject *m_parent;
 
-    quint8 endpointId(void);
     quint8 version(void);
 
     QString manufacturerName(void);
     QString modelName(void);
 
-    QMap <QString, QVariant> &meta(void);
+    QVariant meta(const QString &key, const QVariant &defaultValue = QVariant());
+    void setMeta(const QString &key, const QVariant &value);
+    void clearMeta(const QString &key);
 
 };
 
