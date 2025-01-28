@@ -151,6 +151,7 @@
   "leftMode":                   {"type": "select", "enum": ["leftRelay", "rightRelay", "decoupled"]},
   "lightType":                  {"type": "select", "enum": ["led", "incandescent", "halogen"], "icon": "mdi:lightbulb-on"},
   "operationMode":              {"type": "select", "enum": ["command", "event"]},
+  "powerMode":                  {"type": "select", "enum": ["high", "medium", "low"]},
   "powerOnStatus":              {"type": "select", "enum": {"0": "off", "1": "on", "2": "toggle", "255": "previous"}},
   "radarScene":                 {"type": "select", "enum": ["default", "bathroom", "bedroom", "sleeping"]},
   "rightMode":                  {"type": "select", "enum": ["leftRelay", "rightRelay", "decoupled"]},
