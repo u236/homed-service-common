@@ -20,7 +20,7 @@ QJsonObject BinaryObject::request(void)
     QMap <QString, QVariant> options = option().toMap();
     QJsonObject json;
 
-    if (m_name == "batteryLow" || m_name == "tamper" || options.value("diagnostic").toBool())
+    if (m_name.startsWith("battery") || m_name.startsWith("tamper") || options.value("diagnostic").toBool())
         json.insert("entity_category", "diagnostic");
 
     if (options.contains("class"))
@@ -44,16 +44,20 @@ QJsonObject SensorObject::request(void)
     QList <QString> valueTemplate = {QString("value_json.%1").arg(m_name)}, forceUpdate = {"action", "event", "scene"};
     QJsonObject json;
 
-    if (forceUpdate.contains(m_name))
+    for (int i = 0; i < forceUpdate.count(); i++)
     {
+        if (!m_name.startsWith(forceUpdate.at(i)))
+            continue;
+
         valueTemplate.append("is_defined");
         json.insert("force_update", true);
+        break;
     }
 
     if (options.contains("round"))
         valueTemplate.append(QString("round(%1)").arg(options.value("round").toInt()));
 
-    if (m_name == "battery" || m_name == "batteryStatus" || options.value("diagnostic").toBool())
+    if (m_name.startsWith("battery") || options.value("diagnostic").toBool())
         json.insert("entity_category", "diagnostic");
 
     if (options.contains("class"))
@@ -233,24 +237,29 @@ QJsonObject LightObject::request(void)
 
 QJsonObject CoverObject::request(void)
 {
+    QList <QString> list = m_name.split('_');
     QJsonObject json;
+    QString id;
+
+    if (list.count() > 1)
+        id = QString("_%1").arg(list.at(1));
 
     json.insert("device_class", option().toString() == "blind" ? "blind" : "curtain");
 
-    json.insert("value_template", "{{ value_json.cover }}");
+    json.insert("value_template", QString("{{ value_json.cover%1 }}").arg(id));
     json.insert("state_open", "open");
     json.insert("state_closed", "closed");
     json.insert("state_topic", m_stateTopic);
 
-    json.insert("position_template", "{{ value_json.position }}");
+    json.insert("position_template", QString("{{ value_json.position%1 }}").arg(id));
     json.insert("position_topic", m_stateTopic);
 
-    json.insert("payload_open", "{\"cover\":\"open\"}");
-    json.insert("payload_close", "{\"cover\":\"close\"}");
-    json.insert("payload_stop", "{\"cover\":\"stop\"}");
+    json.insert("payload_open", QString("{\"cover%1\":\"open\"}").arg(id));
+    json.insert("payload_close", QString("{\"cover%1\":\"close\"}").arg(id));
+    json.insert("payload_stop", QString("{\"cover%1\":\"stop\"}").arg(id));
     json.insert("command_topic", m_commandTopic);
 
-    json.insert("set_position_template", "{\"position\":{{ position }}}");
+    json.insert("set_position_template", QString("{\"position%1\":{{ position }}}").arg(id));
     json.insert("set_position_topic", m_commandTopic);
 
     return json;
@@ -258,18 +267,19 @@ QJsonObject CoverObject::request(void)
 
 QJsonObject LockObject::request(void)
 {
+    QString name = QString(m_name).replace("lock", "status");
     QJsonObject json;
 
     if (option().toString() == "valve")
         json.insert("icon", "mdi:pipe-valve");
 
-    json.insert("value_template", "{{ value_json.status }}");
+    json.insert("value_template", QString("{{ value_json.%1 }}").arg(name));
     json.insert("state_locked", "off");
     json.insert("state_unlocked", "on");
     json.insert("state_topic", m_stateTopic);
 
-    json.insert("payload_lock", "{\"status\":\"off\"}");
-    json.insert("payload_unlock", "{\"status\":\"on\"}");
+    json.insert("payload_lock", QString("{\"%1\":\"off\"}").arg(name));
+    json.insert("payload_unlock", QString("{\"%1\":\"on\"}").arg(name));
     json.insert("command_topic", m_commandTopic);
 
     return json;
