@@ -57,7 +57,7 @@ QJsonObject SensorObject::request(void)
     if (options.contains("round"))
         valueTemplate.append(QString("round(%1)").arg(options.value("round").toInt()));
 
-    if (m_name.startsWith("battery") || options.value("diagnostic").toBool())
+    if (m_name.startsWith("battery") || m_name == "linkQuality" || options.value("diagnostic").toBool())
         json.insert("entity_category", "diagnostic");
 
     if (options.contains("class"))
@@ -71,6 +71,9 @@ QJsonObject SensorObject::request(void)
 
     if (options.contains("icon"))
         json.insert("icon", options.value("icon").toString());
+
+    if (m_name == "linkQuality")
+        json.insert("icon", "mdi:signal");
 
     json.insert("value_template", QString("{{ %1 }}").arg(valueTemplate.join(" | ")));
     json.insert("state_topic", m_stateTopic);
