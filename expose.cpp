@@ -193,43 +193,56 @@ QJsonObject SwitchObject::request(void)
 
 QJsonObject LightObject::request(void)
 {
-    QList <QString> options = option().toStringList();
-    QString commandOnTemplate = "\"status\":\"on\"";
+    QList <QString> list = m_name.split('_'), options = option().toStringList();
     QJsonObject json;
+    QString id;
+
+    if (list.count() > 1)
+        id = QString("_%1").arg(list.at(1));
 
     if (options.contains("level"))
     {
-        commandOnTemplate.append("{% if brightness is defined %},\"level\":{{ brightness }}{% endif %}");
-        json.insert("brightness_template", "{{ value_json.level }}");
+        json.insert("brightness_value_template", QString("{{ value_json.level%1 }}").arg(id));
+        json.insert("brightness_state_topic", m_stateTopic);
+
+        json.insert("brightness_command_template",QString("{\"level%1\":{{ value }}}").arg(id));
+        json.insert("brightness_command_topic", m_commandTopic);
     }
 
     if (options.contains("color"))
     {
-        commandOnTemplate.append("{% if red is defined and green is defined and blue is defined %},\"color\":[{{ red }},{{ green }},{{ blue }}]{% endif %}");
-        json.insert("red_template", "{{ value_json.color[0] }}");
-        json.insert("green_template", "{{ value_json.color[1] }}");
-        json.insert("blue_template", "{{ value_json.color[2] }}");
+        json.insert("rgb_value_template", QString("{{ value_json.color%1 | join(',') }}").arg(id));
+        json.insert("rgb_state_topic", m_stateTopic);
+
+        json.insert("rgb_command_template",QString("{\"color%1\":[{{ red }},{{ green }},{{ blue }}]}").arg(id));
+        json.insert("rgb_command_topic", m_commandTopic);
     }
 
     if (options.contains("colorTemperature"))
     {
-        QMap <QString, QVariant> colorTemperature = option("colorTemperature").toMap();
+        QMap <QString, QVariant> colorTemperature = option(QString("colorTemperature%1").arg(id)).toMap();
 
-        commandOnTemplate.append("{% if color_temp is defined %},\"colorTemperature\":{{ color_temp }}{% endif %}");
-        json.insert("color_temp_template", "{{ value_json.colorTemperature }}");
+        json.insert("color_temp_value_template", QString("{{ value_json.colorTemperature%1 }}").arg(id));
+        json.insert("color_temp_state_topic", m_stateTopic);
+
+        json.insert("color_temp_command_template",QString("{\"colorTemperature%1\":{{ value }}}").arg(id));
+        json.insert("color_temp_command_topic", m_commandTopic);
+
         json.insert("min_mireds", colorTemperature.value("min", 153).toInt());
         json.insert("max_mireds", colorTemperature.value("max", 500).toInt());
     }
 
-    json.insert("schema", "template");
+    if (options.contains("colorMode"))
+    {
+        json.insert("color_mode_value_template", QString("{{ 'rgb' if value_json.colorMode%1 else 'color_temp' }}").arg(id));
+        json.insert("color_mode_state_topic", m_stateTopic);
+    }
 
-    json.insert("state_template", "{{ value_json.status }}");
+    json.insert("state_value_template", QString("{{ '{\"status%1\":\"on\"}' if value_json.status%1 == 'on' else '{\"status%1\":\"off\"}' }}").arg(id));
     json.insert("state_topic", m_stateTopic);
 
-    json.insert("command_on_template", QString("{%1}").arg(commandOnTemplate));
-    json.insert("command_off_template", "{\"status\":\"off\"}");
-    json.insert("payload_on", "on");
-    json.insert("payload_off", "off");
+    json.insert("payload_on", QString("{\"status%1\":\"on\"}").arg(id));
+    json.insert("payload_off", QString("{\"status%1\":\"off\"}").arg(id));
     json.insert("command_topic", m_commandTopic);
 
     return json;
