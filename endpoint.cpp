@@ -164,15 +164,21 @@ void AbstractDeviceObject::publishExposes(HOMEd *controller, const QString &addr
 
 QVariant AbstractMetaObject::option(const QString &name, const QVariant &defaultValue)
 {
+    QVariant value;
+
     if (m_parent)
     {
         AbstractDeviceObject *device = reinterpret_cast <AbstractDeviceObject*> (m_parent->device().data());
         QString optionName = name.isEmpty() ? m_name : name;
-        QVariant value = device->options().value(QString("%1_%2").arg(optionName, QString::number(m_parent->id())));
-        return value.isValid() ? value : device->options().value(optionName, defaultValue);
+        QList <QString> list = optionName.split('_');
+
+        if (list.count() == 1)
+            optionName.append(QString("_%2").arg(m_parent->id()));
+
+        value = device->options().contains(optionName) ? device->options().value(optionName) : device->options().value(list.at(0), defaultValue);
     }
 
-    return QVariant();
+    return value;
 }
 
 quint8 AbstractMetaObject::version(void)

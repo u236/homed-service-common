@@ -201,7 +201,7 @@ QJsonObject LightObject::request(void)
     QString id;
 
     if (list.count() > 1)
-        id = QString("_%1").arg(list.at(1));
+        id = QString("_%1").arg(list.value(1));
 
     if (options.contains("level"))
     {
@@ -258,7 +258,7 @@ QJsonObject CoverObject::request(void)
     QString id;
 
     if (list.count() > 1)
-        id = QString("_%1").arg(list.at(1));
+        id = QString("_%1").arg(list.value(1));
 
     json.insert("device_class", option().toString() == "blind" ? "blind" : "curtain");
 
