@@ -97,7 +97,7 @@
     when: always
   - when: never
 
-Deploy Docker Images:
+.deploy_docker:
   stage: deploy
   script:
   - "[[ -n ${DOCKER_EXTRA} ]] && sh -c \"${DOCKER_EXTRA}\""
@@ -105,13 +105,9 @@ Deploy Docker Images:
   - "cp ${NAME}-linux-aarch64 deploy/docker/${NAME}-arm64"
   - "cp ${NAME}-linux-armhf deploy/docker/${NAME}-arm"
   - "docker buildx create --driver-opt network=host --name job_${CI_JOB_ID} --use"
-  - "docker buildx build --platform linux/arm64,linux/arm/v7,linux/amd64 --push --tag 127.0.0.1:5000/${NAME}:${CI_COMMIT_TAG} --tag 127.0.0.1:5000/${NAME}:latest deploy/docker/"
+  - "docker buildx build --platform linux/arm64,linux/arm/v7,linux/amd64 --push ${TAGS} deploy/docker/"
   - "docker buildx prune -af"
   - "docker buildx rm"
-  rules:
-  - if: $CI_COMMIT_TAG =~ /^\d.\d.\d+$/ || $CI_COMMIT_TAG == "dev"
-    when: always
-  - when: never
 
 Clean Up Linux Packages:
   stage: deploy
@@ -181,3 +177,21 @@ Deploy Keenetic NDMS Package (mipsel-3.4):
   extends: .deploy_entware
   variables:
     ARCHITECTURE: mipsel-3.4
+
+Deploy Docker Images (release):
+  extends: .deploy_docker
+  variables:
+    TAGS: --tag 127.0.0.1:5000/${NAME}:${CI_COMMIT_TAG} --tag 127.0.0.1:5000/${NAME}:latest
+  rules:
+  - if: $CI_COMMIT_TAG =~ /^\d.\d.\d+$/
+    when: always
+  - when: never
+
+Deploy Docker Images (development):
+  extends: .deploy_docker
+  variables:
+    TAGS: --tag 127.0.0.1:5000/${NAME}:dev
+  rules:
+  - if: $CI_COMMIT_TAG == "dev"
+    when: always
+  - when: never

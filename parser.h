@@ -68,7 +68,7 @@ private:
     QVector <Item> m_items;
 
     Type itemType(const QString &v);
-    int  itemPriority(Type type);
+    int itemPriority(Type type);
 
     void calculate(void);
 
