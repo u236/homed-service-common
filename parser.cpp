@@ -31,7 +31,12 @@ Expression::Expression(QString string) : m_result(NAN)
         QString value = expression.cap();
 
         if (number.indexIn(value) != -1)
+        {
+            if (position && !QString("+-*/^(").contains(string.at(position - 1)))
+                return;
+
             items.append({Type::Number, value});
+        }
         else
             items.append({itemType(value), value});
 
