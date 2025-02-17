@@ -6,6 +6,8 @@
 #define STATUS_UPDATE_PERIOD        60000
 #define EXIT_RESTART                1000
 
+#define mqttSafe(string)            QString(string).replace(QRegExp("[\\#|\\+|\\/]"), "_")
+
 #include <QtMqtt/QMqttClient>
 #include <QCoreApplication>
 #include <QElapsedTimer>
@@ -27,7 +29,7 @@ public:
     inline QSettings *getConfig(void) { return m_config; }
     inline QString mqttPrefix(void) { return m_mqttPrefix; }
     inline QString serviceTopic(void) { return m_serviceTopic; }
-    inline QString uniqueId(void) { return m_uniqueId; }    
+    inline QString uniqueId(void) { return m_uniqueId; }
     inline bool mqttStatus(void) { return m_connected; }
 
     void mqttSubscribe(const QString &topic);
