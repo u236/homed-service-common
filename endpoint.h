@@ -18,8 +18,7 @@ enum class Availability
 {
     Unknown,
     Online,
-    Offline,
-    Inactive
+    Offline
 };
 
 class AbstractEndpointObject : public QObject
