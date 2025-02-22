@@ -62,7 +62,7 @@ private:
         QString value;
     };
 
-    inline double radian(double value) { return (value / 180 * M_PI); }
+    inline double radian(double value) { return value / 180 * M_PI; }
 
     double m_result;
     QVector <Item> m_items;
