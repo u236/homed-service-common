@@ -230,10 +230,11 @@ void Expression::calculate(void)
     m_result = result.at(0);
 }
 
-QVariant Parser::jsonValue(const QJsonObject &json, const QString &path)
+QVariant Parser::jsonValue(const QByteArray &data, const QString &path)
 {
     QList <QString> list = path.split('.');
-    QJsonObject object = json;
+    QJsonDocument documement = QJsonDocument::fromJson(data);
+    QJsonValue value;
 
     for (int i = 0; i < list.count(); i++)
     {
@@ -247,16 +248,20 @@ QVariant Parser::jsonValue(const QJsonObject &json, const QString &path)
             key = key.mid(0, position);
         }
 
-        if (!object.contains(key))
-            break;
+        if (!key.isEmpty())
+            value = documement.object().value(key);
+
+        if (index >= 0)
+            value = key.isEmpty() ? documement.array().at(index) : value.toArray().at(index);
+
 
         if (i < list.length() - 1)
         {
-            object = index < 0 ? object.value(key).toObject() : object.value(key).toArray().at(index).toObject();
+            documement = value.isObject() ? QJsonDocument(value.toObject()) : QJsonDocument(value.toArray());
             continue;
         }
 
-        return index < 0 ? object.value(key).toVariant() : object.value(key).toArray().at(index).toVariant();
+        return value.toVariant();
     }
 
     return QVariant();
@@ -270,8 +275,8 @@ QVariant Parser::stringValue(const QString &string)
     if (check)
         return value;
 
-    if (string != "true" && string != "false")
-        return string.isEmpty() ? QVariant() : string;
+    if (string == "true" || string == "false")
+        return string == "true" ? true : false;
 
-    return string == "true" ? true : false;
+    return string.isEmpty() ? QVariant() : string;
 }

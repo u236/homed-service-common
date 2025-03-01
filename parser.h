@@ -79,7 +79,7 @@ class Parser
 
 public:
 
-    static QVariant jsonValue(const QJsonObject &json, const QString &path);
+    static QVariant jsonValue(const QByteArray &data, const QString &path);
     static QVariant stringValue(const QString &string);
 
 };
