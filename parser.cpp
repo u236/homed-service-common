@@ -232,8 +232,8 @@ void Expression::calculate(void)
 
 QVariant Parser::jsonValue(const QByteArray &data, const QString &path)
 {
-    QList <QString> list = path.split('.');
     QJsonDocument documement = QJsonDocument::fromJson(data);
+    QList <QString> list = path.split('.');
     QJsonValue value;
 
     for (int i = 0; i < list.count(); i++)
@@ -252,19 +252,13 @@ QVariant Parser::jsonValue(const QByteArray &data, const QString &path)
             value = documement.object().value(key);
 
         if (index >= 0)
-            value = key.isEmpty() ? documement.array().at(index) : value.toArray().at(index);
+            value = value.isArray() ? value.toArray().at(index) : documement.array().at(index);
 
-
-        if (i < list.length() - 1)
-        {
-            documement = value.isObject() ? QJsonDocument(value.toObject()) : QJsonDocument(value.toArray());
-            continue;
-        }
-
-        return value.toVariant();
+        if (i < list.count() - 1)
+            documement = value.isArray() ? QJsonDocument(value.toArray()) : QJsonDocument(value.toObject());
     }
 
-    return QVariant();
+    return value.toVariant();
 }
 
 QVariant Parser::stringValue(const QString &string)
