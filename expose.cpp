@@ -310,20 +310,26 @@ QJsonObject ThermostatObject::request(void)
     if (systemMode.contains("fan"))
         systemMode.replace(systemMode.indexOf("fan"), "fan_only");
 
+    if (systemMode.isEmpty())
+        systemMode.append("heat");
+
     if (option("runningStatus").toBool())
     {
-        QString actionTemplate = "\"off\" if value_json.running == false";
+        QList <QString> list = {"heat", "cool", "fan_only"};
+        QString actionTemplate;
 
-        if (systemMode.contains("heat"))
-            actionTemplate.append(" else \"heating\" if value_json.systemMode == \"heat\"");
+        for (int i = 0; i < list.count(); i++)
+        {
+            if (!systemMode.contains(list.at(i)))
+                continue;
 
-        if (systemMode.contains("cool"))
-            actionTemplate.append(" else \"cooling\" if value_json.systemMode == \"cool\"");
+            if (!actionTemplate.isEmpty() && i)
+                actionTemplate.append(QString(" if value_json.systemMode == \"%1\" ").arg(list.at(i - 1)));
 
-        if (systemMode.contains("fan_only"))
-            actionTemplate.append(" else \"fan\" if value_json.systemMode == \"fan\"");
+            actionTemplate.append(QString("else \"%1\"").arg(list.at(i) != "fan_only" ? QString(list.at(i)).append("ing") : "fan"));
+        }
 
-        json.insert("action_template", QString("{{ %1 else \"idle\" }}").arg(actionTemplate));
+        json.insert("action_template", QString("{{ \"idle\" if value_json.running == false %1 }}").arg(actionTemplate));
         json.insert("action_topic", m_stateTopic);
     }
 
@@ -358,7 +364,7 @@ QJsonObject ThermostatObject::request(void)
     if (targetTemperature.contains("step"))
         json.insert("temp_step", targetTemperature.value("step").toDouble());
 
-    json.insert("modes", systemMode.isEmpty() ? QJsonArray {"heat"} : QJsonArray::fromStringList(systemMode));
+    json.insert("modes", QJsonArray::fromStringList(systemMode));
 
     json.insert("mode_state_template", "{{ \"fan_only\" if value_json.systemMode == \"fan\" else value_json.systemMode }}");
     json.insert("mode_state_topic", m_stateTopic);
