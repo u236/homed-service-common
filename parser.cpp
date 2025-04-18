@@ -230,6 +230,55 @@ void Expression::calculate(void)
     m_result = result.at(0);
 }
 
+QString Parser::formatValue(const QString &string)
+{
+    QRegExp regexp("\\((.*)\\)");
+
+    if (regexp.indexIn(string) != -1)
+    {
+        QList <QString> actionList = {"fromHex", "toHex", "time"};
+
+        switch (actionList.indexOf(string.mid(0, string.indexOf(0x28))))
+        {
+            case 0: // fromHex
+            {
+                QByteArray data = QByteArray::fromHex(regexp.cap(1).toUtf8());
+                QList <QString> list;
+
+                for (int i = 0; i < data.length(); i++)
+                    list.append(QString::number(static_cast <quint8> (data.at(i))));
+
+                return list.join(',');
+            }
+
+            case 1: // toHex
+            {
+                QList <QString> list = regexp.cap(1).split(',');
+                QByteArray data;
+
+                for (int i = 0; i < list.count(); i++)
+                    data.append(static_cast <char> (list.at(i).toInt()));
+
+                return QString(data.toHex()).toUpper();
+            }
+
+            case 2: // time
+            {
+                bool check;
+                QList <QString> list = regexp.cap(1).split('|');
+                qint64 value = list.value(1).toLongLong(&check);
+                QDateTime dateTime = check ? QDateTime::fromSecsSinceEpoch(value) : QDateTime::currentDateTime();
+                return list.value(0).isEmpty() ? QString::number(dateTime.currentSecsSinceEpoch()) : dateTime.toString(list.value(0).trimmed());
+            }
+
+            default:
+                break;
+        }
+    }
+
+    return string;
+}
+
 QVariant Parser::jsonValue(const QByteArray &data, const QString &path)
 {
     QJsonDocument documement = QJsonDocument::fromJson(data);
