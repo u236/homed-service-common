@@ -281,7 +281,7 @@ QString Parser::formatValue(const QString &string)
 
 QVariant Parser::jsonValue(const QByteArray &data, const QString &path)
 {
-    QJsonDocument documement = QJsonDocument::fromJson(data);
+    QJsonDocument document = QJsonDocument::fromJson(data);
     QList <QString> list = path.split('.');
     QJsonValue value;
 
@@ -298,16 +298,34 @@ QVariant Parser::jsonValue(const QByteArray &data, const QString &path)
         }
 
         if (!key.isEmpty())
-            value = documement.object().value(key);
+            value = document.object().value(key);
 
         if (index >= 0)
-            value = value.isArray() ? value.toArray().at(index) : documement.array().at(index);
+            value = value.isArray() ? value.toArray().at(index) : document.array().at(index);
 
         if (i < list.count() - 1)
-            documement = value.isArray() ? QJsonDocument(value.toArray()) : QJsonDocument(value.toObject());
+            document = value.isArray() ? QJsonDocument(value.toArray()) : QJsonDocument(value.toObject());
     }
 
     return value.toVariant();
+}
+
+
+QString Parser::urlValue(const QByteArray &string, const QString &key)
+{
+    QList <QByteArray> list = string.split('&');
+
+    for (int i = 0; i < list.count(); i++)
+    {
+        QList <QByteArray> item = list.at(i).split('=');
+
+        if (item.value(0) != key)
+            continue;
+
+        return QUrl::fromPercentEncoding(item.value(1));
+    }
+
+    return QString();
 }
 
 QVariant Parser::stringValue(const QString &string)
