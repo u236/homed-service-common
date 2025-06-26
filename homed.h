@@ -24,7 +24,7 @@ class HOMEd : public QObject
 
 public:
 
-    HOMEd(const QString &configFile, bool multiple = false);
+    HOMEd(const QString &version, const QString &configFile, bool multiple = false);
 
     inline QSettings *getConfig(void) { return m_config; }
     inline QString mqttPrefix(void) { return m_mqttPrefix; }

@@ -4,7 +4,7 @@
 #include "homed.h"
 #include "logger.h"
 
-HOMEd::HOMEd(const QString &configFile, bool multiple) : QObject(nullptr), m_mqtt(new QMqttClient(this)), m_statusTimer(new QTimer(this)), m_reconnectTimer(new QTimer(this)), m_watcher(new QFileSystemWatcher(this)), m_connected(false), m_first(true)
+HOMEd::HOMEd(const QString &version, const QString &configFile, bool multiple) : QObject(nullptr), m_mqtt(new QMqttClient(this)), m_statusTimer(new QTimer(this)), m_reconnectTimer(new QTimer(this)), m_watcher(new QFileSystemWatcher(this)), m_connected(false), m_first(true)
 {
     QDate date = QDate::currentDate();
     QString instance;
@@ -17,18 +17,23 @@ HOMEd::HOMEd(const QString &configFile, bool multiple) : QObject(nullptr), m_mqt
     setLogFile(m_config->value("log/file", "/var/log/homed.log").toString());
     qInstallMessageHandler(logger);
 
-    if (date > QDate(date.year(), 12, 23) || date < QDate(date.year(), 1, 15))
-        logInfo << "Merry Christmas and a Happy New Year!" << "\xF0\x9F\x8E\x81\xF0\x9F\x8E\x84\xF0\x9F\x8D\xBA";
-
     m_mqttPrefix = m_config->value("mqtt/prefix", "homed").toString();
     m_interval = static_cast <quint32> (m_config->value("mqtt/interval").toInt() * 1000);
     instance = m_config->value("mqtt/instance").toString();
+
+    if (date > QDate(date.year(), 12, 23) || date < QDate(date.year(), 1, 15))
+        logInfo << "Merry Christmas and a Happy New Year!" << "\xF0\x9F\x8E\x81\xF0\x9F\x8E\x84\xF0\x9F\x8D\xBA";
+
+    logInfo << "Starting version" << version.toUtf8().constData();
+    logInfo << "Configuration file is" << getConfig()->fileName();
+    logInfo << "MQTT prefix is" << m_mqttPrefix;
 
     m_serviceTopic = QCoreApplication::applicationName().split('-').last();
     m_uniqueId = QString("homed-%1_%2").arg(m_serviceTopic, m_mqttPrefix);
 
     if (multiple && !instance.isEmpty())
     {
+        logInfo << "Instance name is" << instance;
         m_serviceTopic.append('/').append(instance);
         m_uniqueId.append('_').append(instance);
     }
