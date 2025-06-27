@@ -34,6 +34,7 @@
   "eventsPerMinute":            {"type": "sensor", "icon": "mdi:radioactive"},
   "fallStatus":                 {"type": "sensor", "icon": "mdi:alert"},
   "feelsLike":                  {"type": "sensor", "unit": "°C", "icon": "mdi:thermometer"},
+  "flow":                       {"type": "sensor", "class": "volume_flow_rate", "state": "measurement", "unit": "m³/h"},
   "formaldehyde":               {"type": "sensor", "class": "volatile_organic_compounds", "state": "measurement", "unit": "µg/m³"},
   "frequency":                  {"type": "sensor", "class": "frequency", "state": "measurement", "unit": "Hz", "round": 1},
   "illuminance":                {"type": "sensor", "class": "illuminance", "state": "measurement", "unit": "lx"},
