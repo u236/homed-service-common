@@ -1,11 +1,13 @@
 #include <QCoreApplication>
 #include <QDateTime>
 #include <QFileInfo>
+#include <QMutexLocker>
 #include <iostream>
 #include "logger.h"
 
 static bool enabled, timestamps;
 static QFile file;
+static QMutex mutex;
 
 static QString typeString(QtMsgType type)
 {
@@ -34,6 +36,7 @@ void setLogFile(const QString &value)
 
 void logger(QtMsgType type, const QMessageLogContext &, const QString &message)
 {
+    QMutexLocker lock(&mutex);
     QString service = QCoreApplication::applicationName().split('-').last(), timestamp = QDateTime::currentDateTime().toString("yyyy.MM.dd hh:mm:ss.zzz"), data = QString("(%1) %2").arg(typeString(type), service.append(':').leftJustified(12));
 
     data.append(message.front().toUpper());
