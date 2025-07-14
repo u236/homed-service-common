@@ -139,6 +139,8 @@ QJsonObject NumberObject::request(void)
 QJsonObject SelectObject::request(void)
 {
     QMap <QString, QVariant> options = option().toMap();
+    QVariant data = options.value("enum");
+    QJsonArray array;
     QJsonObject json;
 
     if (!options.value("control").toBool())
@@ -147,7 +149,23 @@ QJsonObject SelectObject::request(void)
     if (options.contains("icon"))
         json.insert("icon", options.value("icon").toString());
 
-    json.insert("options", QJsonArray::fromStringList(options.value("enum").toStringList()));
+    switch (data.type())
+    {
+        case QVariant::Map:
+        {
+            QMap <QString, QVariant> map = data.toMap();
+
+            for (auto it = map.begin(); it != map.end(); it++)
+                array.append(it.value().toString());
+
+            break;
+        }
+
+        case QVariant::List: array = QJsonArray::fromStringList(data.toStringList()); break;
+        default: break;
+    }
+
+    json.insert("options", array);
 
     json.insert("value_template", QString("{{ value_json.%1 }}").arg(m_name));
     json.insert("state_topic", m_stateTopic);
