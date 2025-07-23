@@ -8,6 +8,7 @@
 static bool enabled, timestamps;
 static QFile file;
 static QMutex mutex;
+static QString service;
 
 static QString typeString(QtMsgType type)
 {
@@ -17,6 +18,12 @@ static QString typeString(QtMsgType type)
         case QtWarningMsg: return "wrn";
         default: return "inf";
     }
+}
+
+static QString formatMessage(QString message)
+{
+    message.front() = message.front().toUpper();
+    return message;
 }
 
 void setLogEnabled(bool value)
@@ -37,10 +44,12 @@ void setLogFile(const QString &value)
 void logger(QtMsgType type, const QMessageLogContext &, const QString &message)
 {
     QMutexLocker lock(&mutex);
-    QString service = QCoreApplication::applicationName().split('-').last(), timestamp = QDateTime::currentDateTime().toString("yyyy.MM.dd hh:mm:ss.zzz"), data = QString("(%1) %2").arg(typeString(type), service.append(':').leftJustified(12));
+    QString timestamp = QDateTime::currentDateTime().toString("yyyy.MM.dd hh:mm:ss.zzz"), data;
 
-    data.append(message.front().toUpper());
-    data.append(message.midRef(1));
+    if (service.isEmpty())
+        service = QCoreApplication::applicationName().split('-').last().append(':').leftJustified(11);
+
+    data = QString("(%1) %2 %3").arg(typeString(type), service, formatMessage(message));
 
     if (enabled && file.open(QIODevice::WriteOnly | QIODevice::Append))
     {
