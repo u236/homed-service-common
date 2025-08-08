@@ -22,6 +22,7 @@ private:
         Number,
         OpenBracket,
         CloseBracket,
+        Comma,
         Add,
         Subtract,
         Multiply,
@@ -32,27 +33,8 @@ private:
         Ceil,
         Floor,
         Sqrt,
-        Log,
-        Ln,
-        Exp,
-        Cosd,
-        Cosr,
-        Coshd,
-        Coshr,
-        ACosd,
-        ACosr,
-        Sind,
-        Sinr,
-        Sinhd,
-        Sinhr,
-        ASind,
-        ASinr,
-        Tgd,
-        Tgr,
-        Tghd,
-        Tghr,
-        ATgr,
-        ATgd,
+        Min,
+        Max,
         Random
     };
 
@@ -61,8 +43,6 @@ private:
         Type type;
         QString value;
     };
-
-    inline double radian(double value) { return value / 180 * M_PI; }
 
     double m_result;
     QVector <Item> m_items;
