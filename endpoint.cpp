@@ -115,7 +115,7 @@ void AbstractDeviceObject::publishExposes(HOMEd *controller, const QString &addr
 
             if (!remove)
             {
-                QString id = QString::number(it.key()), key = expose->multiple() ? id : "common";
+                QString id = QString::number(it.key()), key = expose->multiple() ? id : "common", yandexType = expose->option("yandexType").toString();
                 QMap <QString, QVariant> map = data.value(key).toMap(), options = map.value("options").toMap();
                 QList <QString> items = map.value("items").toStringList();
 
@@ -153,6 +153,9 @@ void AbstractDeviceObject::publishExposes(HOMEd *controller, const QString &addr
 
                 if (expose->multiple() && endpointName.contains(id))
                     options.insert("name", endpointName.value(id));
+
+                if (!yandexType.isEmpty())
+                    options.insert("yandexType", yandexType);
 
                 if (!options.isEmpty())
                     map.insert("options", options);
