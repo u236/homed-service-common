@@ -22,7 +22,7 @@
     - ${PACKAGE_FILE}
     expire_in: never
   rules:
-  - if: $CI_COMMIT_TAG =~ /^\d.\d.\d+$/
+  - if: $CI_COMMIT_TAG =~ /^\d.\d+.\d+$/
     when: always
   - when: never
 
@@ -58,7 +58,7 @@
     - ${PACKAGE_FILE}
     expire_in: never
   rules:
-  - if: $CI_COMMIT_TAG =~ /^\d.\d.\d+$/
+  - if: $CI_COMMIT_TAG =~ /^\d.\d+.\d+$/
     when: always
   - when: never
 
@@ -93,7 +93,7 @@
     - ${PACKAGE_FILE}
     expire_in: never
   rules:
-  - if: $CI_COMMIT_TAG =~ /^\d.\d.\d+$/
+  - if: $CI_COMMIT_TAG =~ /^\d.\d+.\d+$/
     when: always
   - when: never
 
@@ -114,7 +114,7 @@ Clean Up Linux Packages:
   script:
   - "/opt/scripts/aptRemove.sh ${NAME}"
   rules:
-  - if: $CI_COMMIT_TAG =~ /^\d.\d.\d+$/
+  - if: $CI_COMMIT_TAG =~ /^\d.\d+.\d+$/
     when: always
   - when: never
 
@@ -183,7 +183,7 @@ Deploy Docker Images (release):
   variables:
     TAGS: --tag 127.0.0.1:5000/${NAME}:${CI_COMMIT_TAG} --tag 127.0.0.1:5000/${NAME}:latest
   rules:
-  - if: $CI_COMMIT_TAG =~ /^\d.\d.\d+$/
+  - if: $CI_COMMIT_TAG =~ /^\d.\d+.\d+$/
     when: always
   - when: never
 
