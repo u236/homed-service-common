@@ -130,7 +130,7 @@ void AbstractDeviceObject::publishExposes(HOMEd *controller, const QString &addr
 
                 if (expose->name() == "thermostat")
                 {
-                    QVariant systemMode = expose->option("systemMode"), operationMode = expose->option("operationMode"), targetTemperature = expose->option("targetTemperature"), runningStatus = expose->option("runningStatus"), programTransitions = expose->option("programTransitions");
+                    QVariant systemMode = expose->option("systemMode"), operationMode = expose->option("operationMode"), targetTemperature = expose->option("targetTemperature"), runningStatus = expose->option("runningStatus"), programTransitions = expose->option("programTransitions"), programType = expose->option("programType");
 
                     if (systemMode.isValid())
                         options.insert("systemMode", systemMode);
@@ -146,6 +146,9 @@ void AbstractDeviceObject::publishExposes(HOMEd *controller, const QString &addr
 
                     if (programTransitions.isValid())
                         options.insert("programTransitions", programTransitions);
+
+                    if (programType.isValid())
+                        options.insert("programType", programType);
                 }
 
                 if (option.isValid())
