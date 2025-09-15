@@ -4,7 +4,7 @@
 
 Expression::Expression(QString string) : m_result(NAN)
 {
-    QRegExp error("([^0-9a-z\\+\\-\\*\\/\\%\\^\\(\\)\\.\\,\\ ])"), number("([0-9]+\\.?[0-9]*)"), negative(QString("(^\\-|[\\+\\-\\*\\/\\^\\(]-)").append(number.pattern())), expression(number.pattern().append("|([()])|([\\+\\-\\*\\/\\%\\^\\,])|(round|ceil|floor|sqrt|min|max|random)"));
+    QRegExp error("([^0-9a-z\\+\\-\\*\\/\\%\\^\\(\\)\\.\\,\\ ])"), number("([0-9]+\\.?[0-9]*)"), negative(QString("(^\\-|[\\+\\-\\*\\/\\^\\(]-)").append(number.pattern())), expression(number.pattern().append("|([()])|([\\+\\-\\*\\/\\%\\^\\,])|(round|ceil|floor|sqrt|exp|min|max|random)"));
     QVector <Item> items;
     QStack <Item> operationStack;
     QStack <int> priorityStack;
@@ -97,6 +97,7 @@ Expression::Type Expression::itemType(const QString &value)
     if (value == "ceil")   return Type::Ceil;
     if (value == "floor")  return Type::Floor;
     if (value == "sqrt")   return Type::Sqrt;
+    if (value == "exp")    return Type::Exp;
     if (value == "min")    return Type::Min;
     if (value == "max")    return Type::Max;
     if (value == "random") return Type::Random;
@@ -172,6 +173,7 @@ void Expression::calculate(void)
                 case Type::Ceil:      result.replace(b, ceil(result.at(b))); break;
                 case Type::Floor:     result.replace(b, floor(result.at(b))); break;
                 case Type::Sqrt:      result.replace(b, sqrt(result.at(b))); break;
+                case Type::Exp:       result.replace(b, exp(result.at(b))); break;
                 case Type::Min:       result.replace(a, qMin(result.at(a), result.at(b))); items.replace(b, Type::Empty); break;
                 case Type::Max:       result.replace(a, qMax(result.at(a), result.at(b))); items.replace(b, Type::Empty); break;
 

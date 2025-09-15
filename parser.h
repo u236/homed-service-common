@@ -33,6 +33,7 @@ private:
         Ceil,
         Floor,
         Sqrt,
+        Exp,
         Min,
         Max,
         Random
