@@ -201,6 +201,7 @@ void HOMEd::connected(void)
 
 void HOMEd::disconnected(void)
 {
+    m_statusTimer->stop();
     m_reconnectTimer->start(MQTT_RECONNECT_INTERVAL);
 
     if (!m_connected && !m_first)
