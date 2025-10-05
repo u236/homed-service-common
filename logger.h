@@ -1,9 +1,9 @@
 #ifndef LOGGER_H
 #define LOGGER_H
 
+#define logDebug(debug)     if (debug) qDebug()
 #define logInfo             qInfo()
 #define logWarning          qWarning()
-#define logDebug(debug)     if (debug) qDebug()
 
 #include <QDebug>
 
