@@ -29,7 +29,7 @@ HOMEd::HOMEd(const QString &version, const QString &configFile, bool multiple) :
     logInfo << "MQTT prefix is" << m_mqttPrefix;
 
     m_serviceTopic = QCoreApplication::applicationName().split('-').last();
-    m_uniqueId = QString("homed-%1_%2").arg(m_serviceTopic, m_mqttPrefix);
+    m_uniqueId = QString("homed-%1_%2").arg(m_serviceTopic, QString(m_mqttPrefix).replace('/', '-'));
 
     if (multiple && !instance.isEmpty())
     {

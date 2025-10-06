@@ -4,7 +4,7 @@
 void AbstractDeviceObject::publishExposes(HOMEd *controller, const QString &address, const QString uniqueId, const QString haPrefix, bool haEnabled, bool names, bool remove)
 {
     QMap <QString, QVariant> data, endpointName = m_options.value("endpointName").toMap();
-    QMap <QString, QString> abbreviation = {{"co2", "CO2"}, {"eco2", "eCO2"}, {"pm1", "PM1"}, {"pm10", "PM10"}, {"pm25", "PM2.5"}, {"voc", "VOC"}};
+    QMap <QString, QString> replacement = {{"co2", "CO2"}, {"eco2", "eCO2"}, {"pm", "PM"}, {"pm1", "PM1"}, {"pm4", "PM4"}, {"pm10", "PM10"}, {"pm25", "PM2.5"}, {"slaveId", "Slave ID"}, {"uv", "UV"}, {"voc", "VOC"}};
     QList <QString> trigger = {"action", "event", "scene"};
 
     for (auto it = m_endpoints.begin(); it != m_endpoints.end(); it++)
@@ -23,7 +23,7 @@ void AbstractDeviceObject::publishExposes(HOMEd *controller, const QString &addr
                 QJsonObject json, identity;
                 QJsonArray availability;
 
-                name = abbreviation.contains(name) ? abbreviation.value(name) : name.replace(QRegExp("([A-Z0-9])"), " \\1").replace(0, 1, name.at(0).toUpper());
+                name = replacement.contains(name) ? replacement.value(name) : name.replace(QRegExp("([A-Z0-9])"), " \\1").replace(0, 1, name.at(0).toUpper());
 
                 if (!id.isEmpty())
                 {
