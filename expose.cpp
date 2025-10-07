@@ -17,10 +17,11 @@ void ExposeObject::registerMetaTypes(void)
 
 QJsonObject BinaryObject::request(void)
 {
+    QList <QString> diagnostic = {"batteryLow", "tamper"};
     QMap <QString, QVariant> options = option().toMap();
     QJsonObject json;
 
-    if (m_name.startsWith("battery") || m_name.startsWith("tamper") || options.value("diagnostic").toBool())
+    if (diagnostic.contains(m_name) || options.value("diagnostic").toBool())
         json.insert("entity_category", "diagnostic");
 
     if (options.contains("class"))
@@ -40,8 +41,8 @@ QJsonObject BinaryObject::request(void)
 
 QJsonObject SensorObject::request(void)
 {
+    QList <QString> valueTemplate = {QString("value_json.%1").arg(m_name)}, forceUpdate = {"action", "event", "scene"}, diagnostic = {"battery", "messageCount", "linkQuality"};
     QMap <QString, QVariant> options = option().toMap();
-    QList <QString> valueTemplate = {QString("value_json.%1").arg(m_name)}, forceUpdate = {"action", "event", "scene"};
     QJsonObject json;
 
     for (int i = 0; i < forceUpdate.count(); i++)
@@ -57,7 +58,7 @@ QJsonObject SensorObject::request(void)
     if (options.contains("round"))
         valueTemplate.append(QString("round(%1)").arg(options.value("round").toInt()));
 
-    if (m_name.startsWith("battery") || m_name == "linkQuality" || options.value("diagnostic").toBool())
+    if (diagnostic.contains(m_name) || options.value("diagnostic").toBool())
         json.insert("entity_category", "diagnostic");
 
     if (options.contains("class"))
