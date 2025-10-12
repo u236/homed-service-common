@@ -99,6 +99,8 @@ protected:
     QMap <QString, QVariant> m_options;
     QMap <quint8, Endpoint> m_endpoints;
 
+    QString exposeTitle(const Expose &expose);
+
 };
 
 class AbstractMetaObject

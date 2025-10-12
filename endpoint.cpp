@@ -4,7 +4,6 @@
 void AbstractDeviceObject::publishExposes(HOMEd *controller, const QString &address, const QString uniqueId, const QString haPrefix, bool haEnabled, bool names, bool remove)
 {
     QMap <QString, QVariant> data, endpointName = m_options.value("endpointName").toMap();
-    QMap <QString, QString> replacement = {{"co2", "CO2"}, {"eco2", "eCO2"}, {"pm", "PM"}, {"pm1", "PM1"}, {"pm4", "PM4"}, {"pm10", "PM10"}, {"pm25", "PM2.5"}, {"slaveId", "Slave ID"}, {"uv", "UV"}, {"voc", "VOC"}};
     QList <QString> trigger = {"action", "event", "scene"};
 
     for (auto it = m_endpoints.begin(); it != m_endpoints.end(); it++)
@@ -18,17 +17,15 @@ void AbstractDeviceObject::publishExposes(HOMEd *controller, const QString &addr
 
             if (haEnabled && expose->discovery())
             {
-                QString id = expose->multiple() ? QString::number(it.key()) : QString(), topic = names ? m_name : address, name = expose->name();
+                QString id = expose->multiple() ? QString::number(it.key()) : QString(), title = exposeTitle(expose), topic = names ? m_name : address;
                 QList <QString> object = {expose->name()};
                 QJsonObject json, identity;
                 QJsonArray availability;
 
-                name = replacement.contains(name) ? replacement.value(name) : name.replace(QRegExp("([A-Z0-9])"), " \\1").replace(0, 1, name.at(0).toUpper());
-
                 if (!id.isEmpty())
                 {
+                    title = endpointName.contains(id) ? endpointName.value(id).toString().append(0x20).append(title) : title.append(0x20).append(id);
                     topic.append('/').append(id);
-                    name.append(0x20).append(endpointName.contains(id) ? endpointName.value(id).toString() : id);
                     object.append(id);
                 }
 
@@ -52,7 +49,7 @@ void AbstractDeviceObject::publishExposes(HOMEd *controller, const QString &addr
                     json.insert("availability", availability);
                     json.insert("availability_mode", "all");
                     json.insert("device", identity);
-                    json.insert("name", name);
+                    json.insert("name", title);
                     json.insert("unique_id", QString("%1_%2").arg(uniqueId, object.join('_')));
                 }
 
@@ -103,7 +100,7 @@ void AbstractDeviceObject::publishExposes(HOMEd *controller, const QString &addr
                         json.insert("availability_mode", "all");
                         json.insert("device", identity);
                         json.insert("event_types", QJsonArray::fromStringList(list));
-                        json.insert("name", name);
+                        json.insert("name", title);
                         json.insert("state_topic", controller->mqttTopic("fd/%1/%2").arg(controller->serviceTopic(), topic));
                         json.insert("unique_id", QString("%1_%2").arg(uniqueId, object.join('_')));
                         json.insert("value_template", QString("{% if value_json.%1 is defined %}{\"event_type\":\"{{ value_json.%1 }}\"}{% endif %}").arg(expose->name()));
@@ -122,7 +119,7 @@ void AbstractDeviceObject::publishExposes(HOMEd *controller, const QString &addr
                 items.append(expose->name());
                 map.insert("items", QVariant(items));
 
-                if (expose->name() == "light" && option.toStringList().contains("colorTemperature"))
+                if (expose->name().startsWith("light") && option.toStringList().contains("colorTemperature"))
                 {
                     QVariant colorTemperature = expose->option("colorTemperature");
                     options.insert("colorTemperature", colorTemperature.isValid() ? colorTemperature : QMap <QString, QVariant> {{"min", 153}, {"max", 500}});
@@ -171,6 +168,27 @@ void AbstractDeviceObject::publishExposes(HOMEd *controller, const QString &addr
     controller->mqttPublish(controller->mqttTopic("expose/%1/%2").arg(controller->serviceTopic(), names ? m_name : address), QJsonObject::fromVariantMap(data), true);
 }
 
+QString AbstractDeviceObject::exposeTitle(const Expose &expose)
+{
+    QString title = expose->option().toMap().value("title").toString();
+
+    if (title.isEmpty())
+    {
+        QList <QString> list = expose->name().replace('_', 0x20).replace(QRegExp("([A-Z])"), " \\1").toLower().split(0x20);
+        QMap <QString, QString> replacement = {{"co2", "CO2"}, {"eco2", "eCO2"}, {"pm", "PM"}, {"pm1", "PM1"}, {"pm4", "PM4"}, {"pm10", "PM10"}, {"pm25", "PM2.5"}, {"uv", "UV"}, {"voc", "VOC"}};
+
+        if (replacement.contains(list.value(0)))
+            list.replace(0, replacement.value(list.value(0)));
+
+        return list.join(0x20).replace(0, 1, list.value(0).at(0).toUpper());
+    }
+    else
+    {
+        QList <QString> list = expose->name().split('_');
+        return QRegExp("\\d+").exactMatch(list.value(1)) ? title.append(0x20).append(list.value(1)) : title;
+    }
+}
+
 QVariant AbstractMetaObject::option(const QString &name, const QVariant &defaultValue)
 {
     QVariant value;
@@ -181,7 +199,7 @@ QVariant AbstractMetaObject::option(const QString &name, const QVariant &default
         QString optionName = name.isEmpty() ? m_name : name;
         QList <QString> list = optionName.split('_');
 
-        if (list.count() == 1)
+        if (list.count() < 2)
             optionName.append(QString("_%2").arg(m_parent->id()));
 
         value = device->options().contains(optionName) ? device->options().value(optionName) : device->options().value(list.at(0), defaultValue);
