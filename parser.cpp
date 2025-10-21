@@ -304,16 +304,18 @@ QString Parser::urlValue(const QByteArray &string, const QString &key)
     return QString();
 }
 
-QString Parser::xmlValue(const QByteArray &xml, const QString &key)
+QString Parser::xmlValue(const QByteArray &string, const QString &key)
 {
-    QXmlStreamReader r(xml);
+    QXmlStreamReader reader(string);
 
-    while (!r.atEnd()) {
-        r.readNext();
+    while (!reader.atEnd())
+    {
+        reader.readNext();
 
-        if (r.isStartElement() && r.name() == key) {
-            return r.readElementText(QXmlStreamReader::ErrorOnUnexpectedElement);
-        }
+        if (!reader.isStartElement() || reader.name() != key)
+            continue;
+
+        return reader.readElementText();
     }
 
     return QString();
