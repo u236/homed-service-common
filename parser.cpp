@@ -1,5 +1,6 @@
 #include <QRandomGenerator>
 #include <QStack>
+#include <QXmlStreamReader>
 #include "parser.h"
 
 Expression::Expression(QString string) : m_result(NAN)
@@ -298,6 +299,21 @@ QString Parser::urlValue(const QByteArray &string, const QString &key)
             continue;
 
         return QUrl::fromPercentEncoding(item.value(1));
+    }
+
+    return QString();
+}
+
+QString Parser::xmlValue(const QByteArray &xml, const QString &key)
+{
+    QXmlStreamReader r(xml);
+
+    while (!r.atEnd()) {
+        r.readNext();
+
+        if (r.isStartElement() && r.name() == key) {
+            return r.readElementText(QXmlStreamReader::ErrorOnUnexpectedElement);
+        }
     }
 
     return QString();
