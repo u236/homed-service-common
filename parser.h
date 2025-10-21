@@ -63,6 +63,7 @@ public:
     static QString formatValue(const QString &string);
     static QVariant jsonValue(const QByteArray &data, const QString &path);
     static QString urlValue(const QByteArray &string, const QString &key);
+    static QString xmlValue(const QByteArray &string, const QString &key);
     static QVariant stringValue(const QString &string);
 
 };
