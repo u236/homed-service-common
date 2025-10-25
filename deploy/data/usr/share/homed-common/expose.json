@@ -67,8 +67,9 @@
   "voc":                        {"type": "sensor", "class": "volatile_organic_compounds_parts", "state": "measurement", "unit": "ppb"},
   "voltage":                    {"type": "sensor", "class": "voltage", "state": "measurement", "unit": "V", "round": 1},
   "volume":                     {"type": "sensor", "class": "volume", "state": "total_increasing", "unit": "L"},
+  "windAngle":                  {"type": "sensor", "unit": "°", "icon": "mdi:compass-outline"},
   "windDirection":              {"type": "sensor", "icon": "mdi:compass-outline"},
-  "windSpeed":                  {"type": "sensor", "unit": "m/s", "icon": "mdi:weather-windy"},
+  "windSpeed":                  {"type": "sensor", "unit": "m/s", "round": 1, "icon": "mdi:weather-windy"},
 
   "autoBrightness":             {"type": "toggle", "icon": "mdi:brightness-4"},
   "backlight":                  {"type": "toggle", "icon": "mdi:brightness-4"},
