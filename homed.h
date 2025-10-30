@@ -6,11 +6,12 @@
 #define STATUS_UPDATE_PERIOD        60000
 #define EXIT_RESTART                1000
 
-#define mqttSafe(string)            QString(string).replace(QRegExp("[\\#|\\+|\\/]"), "_")
+#define mqttSafe(string)            QString(string).replace(QRegExp("[\\#|\\+|\\/]"), "_").trimmed()
 
 #include <QtMqtt/QMqttClient>
 #include <QCoreApplication>
 #include <QElapsedTimer>
+#include <QFile>
 #include <QFileSystemWatcher>
 #include <QJsonArray>
 #include <QJsonDocument>
@@ -41,6 +42,7 @@ public:
     void mqttPublishStatus(bool online = true);
 
     QString mqttTopic(const QString &topic = QString());
+    bool writeFile(QFile &file, const QByteArray &data);
 
 private:
 

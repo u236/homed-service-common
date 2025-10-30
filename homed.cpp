@@ -192,6 +192,30 @@ QString HOMEd::mqttTopic(const QString &topic)
     return QString("%1/%2").arg(m_mqttPrefix, topic);
 }
 
+bool HOMEd::writeFile(QFile &file, const QByteArray &data)
+{
+    bool check = true;
+
+    if (!file.open(QFile::WriteOnly))
+    {
+        logWarning << "File" << file.fileName() << "open error:" << file.errorString();
+        return false;
+    }
+
+    if (file.write(data) != data.length())
+    {
+        logWarning << "File" << file.fileName() << "write error";
+        check = false;
+    }
+
+    file.close();
+
+    if (check)
+        system("sync");
+
+    return check;
+}
+
 void HOMEd::connected(void)
 {
     m_connected = true;
