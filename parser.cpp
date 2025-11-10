@@ -330,7 +330,7 @@ QVariant Parser::stringValue(const QString &string)
         return value;
 
     if (string == "true" || string == "false")
-        return string == "true" ? true : false;
+        return string == "true";
 
     return string.isEmpty() ? QVariant() : string;
 }
