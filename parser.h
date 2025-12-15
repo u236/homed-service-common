@@ -66,6 +66,8 @@ public:
     static QString xmlValue(const QByteArray &string, const QString &key);
     static QVariant stringValue(const QString &string);
 
+    static void checkConditions(QList <QString> &list, const QString empty = QString());
+
 };
 
 #endif
