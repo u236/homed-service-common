@@ -1,8 +1,8 @@
 .build:
   stage: build
   script:
-  - "export PATH=\"${PATH}:/opt/gcc/${COMPILER}/bin\""
-  - "export STAGING_DIR=\"/opt/gcc/${COMPILER}\""
+  - "[[ -n ${COMPILER} ]] && export PATH=\"${PATH}:/opt/gcc/${COMPILER}/bin\""
+  - "[[ -n ${COMPILER} ]] && export STAGING_DIR=\"/opt/gcc/${COMPILER}\""
   - "/opt/qt/${QT_BUILD}/bin/qmake ${NAME}.pro"
   - "make -j $(nproc)"
   - "cp ${NAME} ${NAME}-${ARCHITECTURE}"
@@ -41,6 +41,12 @@ Build Linux Binary (armhf):
     ARCHITECTURE: linux-armhf
     QT_BUILD: qt-arm-linux-gnueabihf-5.15.4-shared
     COMPILER: gcc-arm-linux-gnuebihf-9.4.0
+
+Build Linux Binary (riscv64):
+  extends: .build
+  variables:
+    ARCHITECTURE: linux-riscv64
+    QT_BUILD: qt-riscv64-linux-gnu-5.15.4-shared
 
 Build OpenWRT Binary (aarch64_generic):
   extends: .build

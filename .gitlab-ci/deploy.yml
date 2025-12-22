@@ -138,6 +138,11 @@ Deploy Linux Package (armhf):
   variables:
     ARCHITECTURE: armhf
 
+Deploy Linux Package (riscv64):
+  extends: .deploy_linux
+  variables:
+    ARCHITECTURE: riscv64
+
 Deploy OpenWRT Package (aarch64_generic):
   extends: .deploy_openwrt
   variables:
