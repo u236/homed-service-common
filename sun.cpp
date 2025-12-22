@@ -29,6 +29,12 @@ QTime Sun::fromString(const QString &string)
     }
 }
 
+double Sun::position(void)
+{
+    double sunrise = m_sunrise.msecsSinceStartOfDay(), sunset = m_sunset.msecsSinceStartOfDay();
+    return 1 - sin(M_PI * (QDateTime::currentDateTime().time().msecsSinceStartOfDay() - sunrise) / (sunset - sunrise));
+}
+
 double Sun::julianCentury(double day)
 {
     return (day - 2451545) / 36525;

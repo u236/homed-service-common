@@ -24,6 +24,7 @@ public:
     void updateSunset(void);
 
     QTime fromString(const QString &string);
+    double position(void);
 
 private:
 
