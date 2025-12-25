@@ -170,7 +170,7 @@ void AbstractDeviceObject::publishExposes(HOMEd *controller, const QString &addr
 
 QString AbstractDeviceObject::exposeTitle(const Expose &expose)
 {
-    QString title = expose->option().toMap().value("title").toString();
+    QString title = expose->subOption("title", expose->name()).toString();
 
     if (title.isEmpty())
     {
@@ -203,6 +203,21 @@ QVariant AbstractMetaObject::option(const QString &name, const QVariant &default
             optionName.append(QString("_%2").arg(m_parent->id()));
 
         value = device->options().contains(optionName) ? device->options().value(optionName) : device->options().value(list.at(0), defaultValue);
+    }
+
+    return value;
+}
+
+QVariant AbstractMetaObject::subOption(const QString &itemName, const QString &name, const QVariant &defaultValue)
+{
+    QVariant value;
+
+    if (m_parent)
+    {
+        AbstractDeviceObject *device = reinterpret_cast <AbstractDeviceObject*> (m_parent->device().data());
+        QString optionName = name.isEmpty() ? m_name : name;
+        QMap <QString, QVariant> map = device->options().value(optionName).toMap();
+        value = map.contains(itemName) ? map.value(itemName) : device->options().value(optionName.split('_').value(0)).toMap().value(itemName, defaultValue);
     }
 
     return value;

@@ -115,6 +115,7 @@ public:
     inline void setParent(AbstractEndpointObject *value) { m_parent = value; }
 
     QVariant option(const QString &name = QString(), const QVariant &defaultValue = QVariant());
+    QVariant subOption(const QString &itemName, const QString &name = QString(), const QVariant &defaultValue = QVariant());
 
 protected:
 

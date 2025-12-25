@@ -322,7 +322,7 @@ QJsonObject LockObject::request(void)
 
 QJsonObject ThermostatObject::request(void)
 {
-    QList <QString> operationMode = option("operationMode").toMap().value("enum").toStringList(), fanMode = option("fanMode").toMap().value("enum").toStringList(), systemMode = option("systemMode").toMap().value("enum").toStringList();
+    QList <QString> operationMode = subOption("enum", "operationMode").toStringList(), fanMode = subOption("enum", "fanMode").toStringList(), systemMode = subOption("enum", "systemMode").toStringList();
     QMap <QString, QVariant> targetTemperature = option("targetTemperature").toMap();
     QJsonObject json;
 
