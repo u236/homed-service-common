@@ -180,6 +180,7 @@
   "switchMode":                 {"type": "select", "enum": ["on", "off", "toggle"]},
   "switchType":                 {"type": "select", "enum": ["toggle", "momentary", "multifunction"]},
   "timeoutMode":                {"type": "select", "enum": ["10s", "30s", "60s", "120s"], "icon": "mdi:timer"},
+  "turboMode":                  {"type": "select", "enum": ["on", "off"]},
   "volumeMode":                 {"type": "select", "enum": ["low", "medium", "high"], "icon": "mdi:volume-high"},
   "weekMode":                   {"type": "select", "enum": ["5+2", "6+1", "7+0"], "icon": "mdi:calendar-week"},
 
