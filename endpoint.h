@@ -1,6 +1,7 @@
 #ifndef ENDPOINT_H
 #define ENDPOINT_H
 
+#include <math.h>
 #include <QSharedPointer>
 #include <QVariant>
 #include "homed.h"
@@ -114,8 +115,8 @@ public:
     inline void setName(const QString &value) { m_name = value; }
     inline void setParent(AbstractEndpointObject *value) { m_parent = value; }
 
-    QVariant option(const QString &name = QString(), const QVariant &defaultValue = QVariant());
-    QVariant subOption(const QString &itemName, const QString &name = QString(), const QVariant &defaultValue = QVariant());
+    QVariant option(const QString &name = QString(), double defaultValue = NAN);
+    QVariant option(const QString &optionName, const QString &itemName, double defaultValue = NAN);
 
 protected:
 

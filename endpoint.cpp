@@ -170,7 +170,7 @@ void AbstractDeviceObject::publishExposes(HOMEd *controller, const QString &addr
 
 QString AbstractDeviceObject::exposeTitle(const Expose &expose)
 {
-    QString title = expose->subOption("title", expose->name()).toString();
+    QString title = expose->option(expose->name(), "title").toString();
 
     if (title.isEmpty())
     {
@@ -189,7 +189,7 @@ QString AbstractDeviceObject::exposeTitle(const Expose &expose)
     }
 }
 
-QVariant AbstractMetaObject::option(const QString &name, const QVariant &defaultValue)
+QVariant AbstractMetaObject::option(const QString &name, double defaultValue)
 {
     QVariant value;
 
@@ -202,25 +202,24 @@ QVariant AbstractMetaObject::option(const QString &name, const QVariant &default
         if (list.count() < 2)
             optionName.append(QString("_%2").arg(m_parent->id()));
 
-        value = device->options().contains(optionName) ? device->options().value(optionName) : device->options().value(list.at(0), defaultValue);
+        value = device->options().contains(optionName) ? device->options().value(optionName) : device->options().value(list.at(0));
     }
 
-    return value;
+    return value.isValid() ? value : !isnan(defaultValue) ? defaultValue : QVariant();
 }
 
-QVariant AbstractMetaObject::subOption(const QString &itemName, const QString &name, const QVariant &defaultValue)
+QVariant AbstractMetaObject::option(const QString &optionName, const QString &itemName, double defaultValue)
 {
     QVariant value;
 
     if (m_parent)
     {
         AbstractDeviceObject *device = reinterpret_cast <AbstractDeviceObject*> (m_parent->device().data());
-        QString optionName = name.isEmpty() ? m_name : name;
         QMap <QString, QVariant> map = device->options().value(optionName).toMap();
-        value = map.contains(itemName) ? map.value(itemName) : device->options().value(optionName.split('_').value(0)).toMap().value(itemName, defaultValue);
+        value = map.contains(itemName) ? map.value(itemName) : device->options().value(optionName.split('_').value(0)).toMap().value(itemName);
     }
 
-    return value;
+    return value.isValid() ? value : !isnan(defaultValue) ? defaultValue : QVariant();
 }
 
 quint8 AbstractMetaObject::version(void)
