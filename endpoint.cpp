@@ -210,15 +210,7 @@ QVariant AbstractMetaObject::option(const QString &name, double defaultValue)
 
 QVariant AbstractMetaObject::option(const QString &optionName, const QString &itemName, double defaultValue)
 {
-    QVariant value;
-
-    if (m_parent)
-    {
-        AbstractDeviceObject *device = reinterpret_cast <AbstractDeviceObject*> (m_parent->device().data());
-        QMap <QString, QVariant> map = device->options().value(optionName).toMap();
-        value = map.contains(itemName) ? map.value(itemName) : device->options().value(optionName.split('_').value(0)).toMap().value(itemName);
-    }
-
+    QVariant value = option(optionName, defaultValue).toMap().value(itemName);
     return value.isValid() ? value : !isnan(defaultValue) ? defaultValue : QVariant();
 }
 
