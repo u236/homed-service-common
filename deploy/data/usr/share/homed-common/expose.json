@@ -17,7 +17,7 @@
 
   "action":                     {"type": "sensor", "icon": "mdi:gesture-double-tap"},
   "analogInput":                {"type": "sensor", "icon": "mdi:speedometer", "round": 1},
-  "battery":                    {"type": "sensor", "class": "battery", "unit": "%", "round": 1},
+  "battery":                    {"type": "sensor", "class": "battery", "state": "measurement", "unit": "%", "round": 1},
   "batteryStatus":              {"type": "sensor", "icon": "mdi:battery"},
   "co2":                        {"type": "sensor", "class": "carbon_dioxide", "state": "measurement", "unit": "ppm"},
   "concentration":              {"type": "sensor", "unit": "ppm", "icon": "mdi:speedometer"},

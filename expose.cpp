@@ -74,7 +74,10 @@ QJsonObject SensorObject::request(void)
         json.insert("icon", options.value("icon").toString());
 
     if (m_name == "linkQuality")
+    {
+        json.insert("unit_of_measurement", "lqi");
         json.insert("icon", "mdi:signal");
+    }
 
     json.insert("value_template", QString("{{ %1 }}").arg(valueTemplate.join(" | ")));
     json.insert("state_topic", m_stateTopic);
