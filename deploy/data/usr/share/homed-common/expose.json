@@ -13,7 +13,7 @@
   "tamper":                     {"type": "binary", "class": "tamper"},
   "vibration":                  {"type": "binary", "class": "vibration"},
   "waterLeak":                  {"type": "binary", "class": "moisture"},
-  "windowOpen":                 {"type": "binary", "icon": "mdi:mdi:window-open-variant"},
+  "windowOpen":                 {"type": "binary", "icon": "mdi:window-open-variant"},
 
   "action":                     {"type": "sensor", "icon": "mdi:gesture-double-tap"},
   "analogInput":                {"type": "sensor", "icon": "mdi:speedometer", "round": 1},
@@ -103,7 +103,7 @@
   "tumbleSwitch":               {"type": "toggle", "icon": "mdi:dip-switch"},
   "vocRelay":                   {"type": "toggle", "icon": "mdi:molecule"},
   "vocRelayInvert":             {"type": "toggle", "icon": "mdi:molecule"},
-  "windowDetection":            {"type": "toggle", "icon": "mdi:mdi:window-open-variant"},
+  "windowDetection":            {"type": "toggle", "icon": "mdi:window-open-variant"},
 
   "altitude":                   {"type": "number", "unit": "m", "icon": "mdi:altimeter"},
   "awayDays":                   {"type": "number", "icon": "mdi:calendar-week"},
