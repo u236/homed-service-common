@@ -1,7 +1,7 @@
 #include "endpoint.h"
 #include "expose.h"
 
-void AbstractDeviceObject::publishExposes(HOMEd *controller, const QString &address, const QString uniqueId, const QString haPrefix, bool haEnabled, bool names, bool remove)
+void AbstractDeviceObject::publishExposes(HOMEd *controller, const QString &address, const QString uniqueId, const QString haPrefix, bool haEnabled, bool haUpdate, bool names, bool remove)
 {
     QMap <QString, QVariant> data, endpointName = m_options.value("endpointName").toMap();
     QList <QString> trigger = {"action", "event", "scene"};
@@ -18,7 +18,7 @@ void AbstractDeviceObject::publishExposes(HOMEd *controller, const QString &addr
             if (haEnabled && expose->discovery())
             {
                 QString id = expose->multiple() ? QString::number(it.key()) : QString(), title = exposeTitle(expose), topic = names ? m_name : address;
-                QList <QString> object = {expose->name()};
+                QList <QString> object = {expose->name()}, list = expose->name().split('_');
                 QJsonObject json, identity;
                 QJsonArray availability;
 
@@ -48,6 +48,10 @@ void AbstractDeviceObject::publishExposes(HOMEd *controller, const QString &addr
 
                     json.insert("availability", availability);
                     json.insert("availability_mode", "all");
+
+                    if (haUpdate)
+                        json.insert("default_entity_id", QString("%1.%2_%3").arg(expose->component(), transliterate(m_name), title));
+
                     json.insert("device", identity);
                     json.insert("name", title);
                     json.insert("unique_id", QString("%1_%2").arg(uniqueId, object.join('_')));
@@ -55,14 +59,14 @@ void AbstractDeviceObject::publishExposes(HOMEd *controller, const QString &addr
 
                 controller->mqttPublish(QString("%1/%2/%3/%4/config").arg(haPrefix, expose->component(), uniqueId, object.join('_')), json, true);
 
-                if (trigger.contains(expose->name()))
+                if (trigger.contains(list.value(0)))
                 {
                     QVariant data = option.toMap().value("enum");
-                    QList <QString> list = data.type() == QVariant::Map ? QVariant(data.toMap().values()).toStringList() : data.toStringList();
+                    QList <QString> items = data.type() == QVariant::Map ? QVariant(data.toMap().values()).toStringList() : data.toStringList();
 
-                    for (int i = 0; i < list.count(); i++)
+                    for (int i = 0; i < items.count(); i++)
                     {
-                        QString subtype = list.at(i);
+                        QString subtype = items.at(i);
                         QList <QString> event = {subtype};
 
                         subtype.replace(QRegExp("([A-Z])"), " \\1").replace(0, 1, subtype.at(0).toUpper());
@@ -77,6 +81,9 @@ void AbstractDeviceObject::publishExposes(HOMEd *controller, const QString &addr
 
                             event.append(id);
                         }
+
+                        if (list.count() > 1)
+                            event.append(list.value(1));
 
                         if (m_discovery && !remove)
                         {
@@ -99,7 +106,7 @@ void AbstractDeviceObject::publishExposes(HOMEd *controller, const QString &addr
                         json.insert("availability", availability);
                         json.insert("availability_mode", "all");
                         json.insert("device", identity);
-                        json.insert("event_types", QJsonArray::fromStringList(list));
+                        json.insert("event_types", QJsonArray::fromStringList(items));
                         json.insert("name", title);
                         json.insert("state_topic", controller->mqttTopic("fd/%1/%2").arg(controller->serviceTopic(), topic));
                         json.insert("unique_id", QString("%1_%2").arg(uniqueId, object.join('_')));
@@ -187,6 +194,58 @@ QString AbstractDeviceObject::exposeTitle(const Expose &expose)
         QList <QString> list = expose->name().split('_');
         return QRegExp("\\d+").exactMatch(list.value(1)) ? title.append(0x20).append(list.value(1)) : title;
     }
+}
+
+QString AbstractDeviceObject::transliterate(const QString& string)
+{
+    QMap <QChar, QString> map =
+    {
+        {u'а', "a"},
+        {u'б', "b"},
+        {u'в', "v"},
+        {u'г', "g"},
+        {u'д', "d"},
+        {u'е', "e"},
+        {u'ё', "e"},
+        {u'ж', "zh"},
+        {u'з', "z"},
+        {u'и', "i"},
+        {u'й', "y"},
+        {u'к', "k"},
+        {u'л', "l"},
+        {u'м', "m"},
+        {u'н', "n"},
+        {u'о', "o"},
+        {u'п', "p"},
+        {u'р', "r"},
+        {u'с', "s"},
+        {u'т', "t"},
+        {u'у', "u"},
+        {u'ф', "f"},
+        {u'х', "h"},
+        {u'ц', "ts"},
+        {u'ч', "ch"},
+        {u'ш', "sh"},
+        {u'щ', "sch"},
+        {u'ъ', ""},
+        {u'ы', "y"},
+        {u'ь', ""},
+        {u'э', "e"},
+        {u'ю', "yu"},
+        {u'я', "ya"},
+        {u'і', "i"},
+        {u'ї', "yi"},
+        {u'є', "ye"},
+        {u'ґ', "g"},
+        {u'ў', "u"}
+    };
+
+    QString result;
+
+    for (int i = 0; i < string.length(); i++)
+        result += map.value(string.at(i), string.at(i));
+
+    return result.trimmed().replace(QRegularExpression("\\s+"), "_");
 }
 
 QVariant AbstractMetaObject::option(const QString &name, double defaultValue)
