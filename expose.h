@@ -24,7 +24,10 @@ public:
 
     inline QString component(void) { return m_component; }
 
+    inline QString stateTopic(void) { return m_stateTopic; }
     inline void setStateTopic(const QString &value) { m_stateTopic = value; }
+
+    inline QString commandTopic(void) { return m_commandTopic; }
     inline void setCommandTopic(const QString &value) { m_commandTopic = value; }
 
     inline bool multiple(void) { return m_multiple; }

@@ -2,6 +2,8 @@
 #define ENDPOINT_H
 
 #include <math.h>
+#include <QJsonArray>
+#include <QJsonObject>
 #include <QSharedPointer>
 #include <QVariant>
 #include "homed.h"
@@ -88,6 +90,13 @@ public:
     inline QMap <quint8, Endpoint> &endpoints(void) { return m_endpoints; }
 
     void publishExposes(HOMEd *controller, const QString &address, const QString uniqueId, const QString haPrefix, bool haEnabled, bool haUpdate, bool names, bool remove = false);
+
+private:
+
+    void publishDiscovery(HOMEd *controller, const Expose &expose, const QJsonObject &identity, const QJsonArray &availability, const QString &deviceTopic, const QString &endpointId, const QString &endpointName, const QString &uniqueId, const QString &haPrefix, bool haUpdate, bool remove);
+    void publishTriggers(HOMEd *controller, const Expose &expose, const QJsonObject &identity, const QJsonArray &availability, const QString &id, const QString &endpointName, const QString &uniqueId, const QString &haPrefix, const QString &object, const QString &title, bool remove);
+
+    void addExposeData(const Expose &expose, const QString &endpointId, const QString &endpointName, QMap <QString, QVariant> &data);
 
 protected:
 
