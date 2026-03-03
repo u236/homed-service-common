@@ -206,6 +206,58 @@ void Expression::calculate(void)
     m_result = result.at(0);
 }
 
+QString Parser::transliterate(const QString& string)
+{
+    QMap <QChar, QString> map =
+        {
+                    {u'а', "a"},
+                    {u'б', "b"},
+                    {u'в', "v"},
+                    {u'г', "g"},
+                    {u'д', "d"},
+                    {u'е', "e"},
+                    {u'ё', "e"},
+                    {u'ж', "zh"},
+                    {u'з', "z"},
+                    {u'и', "i"},
+                    {u'й', "y"},
+                    {u'к', "k"},
+                    {u'л', "l"},
+                    {u'м', "m"},
+                    {u'н', "n"},
+                    {u'о', "o"},
+                    {u'п', "p"},
+                    {u'р', "r"},
+                    {u'с', "s"},
+                    {u'т', "t"},
+                    {u'у', "u"},
+                    {u'ф', "f"},
+                    {u'х', "h"},
+                    {u'ц', "ts"},
+                    {u'ч', "ch"},
+                    {u'ш', "sh"},
+                    {u'щ', "sch"},
+                    {u'ъ', ""},
+                    {u'ы', "y"},
+                    {u'ь', ""},
+                    {u'э', "e"},
+                    {u'ю', "yu"},
+                    {u'я', "ya"},
+                    {u'і', "i"},
+                    {u'ї', "yi"},
+                    {u'є', "ye"},
+                    {u'ґ', "g"},
+                    {u'ў', "u"}
+        };
+
+    QString result;
+
+    for (int i = 0; i < string.length(); i++)
+        result += map.value(string.at(i), string.at(i));
+
+    return result.trimmed().replace(QRegularExpression("\\s+"), "_");
+}
+
 QString Parser::formatValue(const QString &string)
 {
     QRegExp regexp("\\((.*)\\)");

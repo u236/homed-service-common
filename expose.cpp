@@ -15,6 +15,27 @@ void ExposeObject::registerMetaTypes(void)
     qRegisterMetaType <ThermostatObject>    ("thermostatExpose");
 }
 
+QString ExposeObject::title(void)
+{
+    QString title = option(m_name, "title").toString();
+
+    if (title.isEmpty())
+    {
+        QList <QString> list = QString(m_name).replace('_', 0x20).replace(QRegExp("([A-Z])"), " \\1").toLower().split(0x20);
+        QMap <QString, QString> replacement = {{"co2", "CO2"}, {"eco2", "eCO2"}, {"pm", "PM"}, {"pm1", "PM1"}, {"pm4", "PM4"}, {"pm10", "PM10"}, {"pm25", "PM2.5"}, {"uv", "UV"}, {"voc", "VOC"}};
+
+        if (replacement.contains(list.value(0)))
+            list.replace(0, replacement.value(list.value(0)));
+
+        return list.join(0x20).replace(0, 1, list.value(0).at(0).toUpper());
+    }
+    else
+    {
+        QList <QString> list = m_name.split('_');
+        return QRegExp("\\d+").exactMatch(list.value(1)) ? title.append(0x20).append(list.value(1)) : title;
+    }
+}
+
 QJsonObject BinaryObject::request(void)
 {
     QList <QString> diagnostic = {"batteryLow", "tamper"};

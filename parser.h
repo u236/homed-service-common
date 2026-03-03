@@ -60,6 +60,8 @@ class Parser
 
 public:
 
+    static QString transliterate(const QString& string);
+
     static QString formatValue(const QString &string);
     static QVariant jsonValue(const QByteArray &data, const QString &path);
     static QString urlValue(const QByteArray &string, const QString &key);

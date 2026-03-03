@@ -1,5 +1,6 @@
 #include "endpoint.h"
 #include "expose.h"
+#include "parser.h"
 
 void AbstractDeviceObject::publishExposes(HOMEd *controller, const QString &address, const QString uniqueId, const QString haPrefix, bool haEnabled, bool haUpdate, bool names, bool remove)
 {
@@ -17,7 +18,7 @@ void AbstractDeviceObject::publishExposes(HOMEd *controller, const QString &addr
 
             if (haEnabled && expose->discovery())
             {
-                QString id = expose->multiple() ? QString::number(it.key()) : QString(), title = exposeTitle(expose), topic = names ? m_name : address;
+                QString id = expose->multiple() ? QString::number(it.key()) : QString(), title = expose->title(), topic = names ? m_name : address;
                 QList <QString> object = {expose->name()}, list = expose->name().split('_');
                 QJsonObject json, identity;
                 QJsonArray availability;
@@ -50,7 +51,7 @@ void AbstractDeviceObject::publishExposes(HOMEd *controller, const QString &addr
                     json.insert("availability_mode", "all");
 
                     if (haUpdate)
-                        json.insert("default_entity_id", QString("%1.%2_%3").arg(expose->component(), transliterate(m_name), title));
+                        json.insert("default_entity_id", QString("%1.%2_%3").arg(expose->component(), Parser::transliterate(m_name), title));
 
                     json.insert("device", identity);
                     json.insert("name", title);
@@ -134,25 +135,17 @@ void AbstractDeviceObject::publishExposes(HOMEd *controller, const QString &addr
 
                 if (expose->name() == "thermostat")
                 {
-                    QVariant systemMode = expose->option("systemMode"), operationMode = expose->option("operationMode"), targetTemperature = expose->option("targetTemperature"), runningStatus = expose->option("runningStatus"), programTransitions = expose->option("programTransitions"), programType = expose->option("programType");
+                    QList <QString> exposes = {"systemMode", "operationMode", "targetTemperature", "runningStatus", "programTransitions", "programType"};
 
-                    if (systemMode.isValid())
-                        options.insert("systemMode", systemMode);
+                    for (int i = 0; i < exposes.count(); i++)
+                    {
+                        QVariant item = expose->option(exposes.at(i));
 
-                    if (operationMode.isValid())
-                        options.insert("operationMode", operationMode);
+                        if (!item.isValid())
+                            continue;
 
-                    if (targetTemperature.isValid())
-                        options.insert("targetTemperature", targetTemperature);
-
-                    if (runningStatus.isValid())
-                        options.insert("runningStatus", runningStatus);
-
-                    if (programTransitions.isValid())
-                        options.insert("programTransitions", programTransitions);
-
-                    if (programType.isValid())
-                        options.insert("programType", programType);
+                        options.insert(exposes.at(i), item);
+                    }
                 }
 
                 if (option.isValid())
@@ -173,79 +166,6 @@ void AbstractDeviceObject::publishExposes(HOMEd *controller, const QString &addr
     }
 
     controller->mqttPublish(controller->mqttTopic("expose/%1/%2").arg(controller->serviceTopic(), names ? m_name : address), QJsonObject::fromVariantMap(data), true);
-}
-
-QString AbstractDeviceObject::exposeTitle(const Expose &expose)
-{
-    QString title = expose->option(expose->name(), "title").toString();
-
-    if (title.isEmpty())
-    {
-        QList <QString> list = expose->name().replace('_', 0x20).replace(QRegExp("([A-Z])"), " \\1").toLower().split(0x20);
-        QMap <QString, QString> replacement = {{"co2", "CO2"}, {"eco2", "eCO2"}, {"pm", "PM"}, {"pm1", "PM1"}, {"pm4", "PM4"}, {"pm10", "PM10"}, {"pm25", "PM2.5"}, {"uv", "UV"}, {"voc", "VOC"}};
-
-        if (replacement.contains(list.value(0)))
-            list.replace(0, replacement.value(list.value(0)));
-
-        return list.join(0x20).replace(0, 1, list.value(0).at(0).toUpper());
-    }
-    else
-    {
-        QList <QString> list = expose->name().split('_');
-        return QRegExp("\\d+").exactMatch(list.value(1)) ? title.append(0x20).append(list.value(1)) : title;
-    }
-}
-
-QString AbstractDeviceObject::transliterate(const QString& string)
-{
-    QMap <QChar, QString> map =
-    {
-        {u'а', "a"},
-        {u'б', "b"},
-        {u'в', "v"},
-        {u'г', "g"},
-        {u'д', "d"},
-        {u'е', "e"},
-        {u'ё', "e"},
-        {u'ж', "zh"},
-        {u'з', "z"},
-        {u'и', "i"},
-        {u'й', "y"},
-        {u'к', "k"},
-        {u'л', "l"},
-        {u'м', "m"},
-        {u'н', "n"},
-        {u'о', "o"},
-        {u'п', "p"},
-        {u'р', "r"},
-        {u'с', "s"},
-        {u'т', "t"},
-        {u'у', "u"},
-        {u'ф', "f"},
-        {u'х', "h"},
-        {u'ц', "ts"},
-        {u'ч', "ch"},
-        {u'ш', "sh"},
-        {u'щ', "sch"},
-        {u'ъ', ""},
-        {u'ы', "y"},
-        {u'ь', ""},
-        {u'э', "e"},
-        {u'ю', "yu"},
-        {u'я', "ya"},
-        {u'і', "i"},
-        {u'ї', "yi"},
-        {u'є', "ye"},
-        {u'ґ', "g"},
-        {u'ў', "u"}
-    };
-
-    QString result;
-
-    for (int i = 0; i < string.length(); i++)
-        result += map.value(string.at(i), string.at(i));
-
-    return result.trimmed().replace(QRegularExpression("\\s+"), "_");
 }
 
 QVariant AbstractMetaObject::option(const QString &name, double defaultValue)

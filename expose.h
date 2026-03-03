@@ -33,6 +33,8 @@ public:
     inline bool discovery(void) { return m_discovery; }
     static void registerMetaTypes(void);
 
+    QString title(void);
+
 protected:
 
     QString m_component, m_stateTopic, m_commandTopic;
