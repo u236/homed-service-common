@@ -3,7 +3,7 @@
   script:
   - "[[ -n ${COMPILER} ]] && export PATH=\"${PATH}:/opt/gcc/${COMPILER}/bin\""
   - "[[ -n ${COMPILER} ]] && export STAGING_DIR=\"/opt/gcc/${COMPILER}\""
-  - "/opt/qt/${QT_BUILD}/bin/qmake ${NAME}.pro"
+  - "/opt/qt/${QT_BUILD}/bin/qmake ${NAME}.pro \"INCLUDEPATH += /opt/openssl/${OPENSSL_BUILD}/include\" \"LIBS += -L/opt/openssl/${OPENSSL_BUILD}/lib\""
   - "make -j $(nproc)"
   - "cp ${NAME} ${NAME}-${ARCHITECTURE}"
   - "cp ${NAME}-${ARCHITECTURE} /var/www/sandbox.u236.org/${NAME}"
@@ -21,8 +21,9 @@ Build Linux Binary (amd64):
   variables:
     ARCHITECTURE: linux-amd64
     QT_BUILD: qt-amd64-linux-5.15.4-shared
+    OPENSSL_BUILD: openssl-amd64-linux-3.3.2-static
   script:
-  - "docker run --rm -u ${UID}:${UID} -v /opt/qt/${QT_BUILD}:/opt/qt/${QT_BUILD} -v ${PWD}/..:/build -w /build/${NAME} gcc:10.5.0 bash -c \"/opt/qt/${QT_BUILD}/bin/qmake ${NAME}.pro; make -j $(nproc)\""
+  - "QT=/opt/qt/${QT_BUILD} OPENSSL=/opt/openssl/${OPENSSL_BUILD} && docker run --rm -u ${UID}:${UID} -v ${QT}:${QT} -v /opt/openssl:/opt/openssl -v ${PWD}/..:/build -w /build/${NAME} gcc:10.5.0 bash -c \"${QT}/bin/qmake ${NAME}.pro \\\"INCLUDEPATH += ${OPENSSL}/include\\\" \\\"LIBS += -L${OPENSSL}/lib\\\"; make -j $(nproc)\""
   - "cp ${NAME} ${NAME}-${ARCHITECTURE}"
   - "cp ${NAME}-${ARCHITECTURE} /var/www/sandbox.u236.org/${NAME}"
 
@@ -31,6 +32,7 @@ Build Linux Binary (aarch64):
   variables:
     ARCHITECTURE: linux-aarch64
     QT_BUILD: qt-aarch64-linux-gnu-5.15.4-shared
+    OPENSSL_BUILD: openssl-aarch64-linux-gnu-3.3.2-static
     COMPILER: gcc-aarch64-none-linux-gnu-10.2.0
   after_script:
   - "cp ${NAME}-linux-aarch64 ${NAME}-linux-arm64"
@@ -40,6 +42,7 @@ Build Linux Binary (armhf):
   variables:
     ARCHITECTURE: linux-armhf
     QT_BUILD: qt-arm-linux-gnueabihf-5.15.4-shared
+    OPENSSL_BUILD: openssl-arm-linux-gnueabihf-3.3.2-static
     COMPILER: gcc-arm-linux-gnuebihf-9.4.0
 
 Build Linux Binary (riscv64):
@@ -47,12 +50,14 @@ Build Linux Binary (riscv64):
   variables:
     ARCHITECTURE: linux-riscv64
     QT_BUILD: qt-riscv64-linux-gnu-5.15.4-shared
+    OPENSSL_BUILD: openssl-riscv64-linux-gnu-3.3.2-static
 
 Build OpenWRT Binary (aarch64_generic):
   extends: .build
   variables:
     ARCHITECTURE: openwrt-aarch64_generic
     QT_BUILD: qt-aarch64_generic-openwrt-linux-5.15.4-shared
+    OPENSSL_BUILD: openssl-aarch64_generic-openwrt-linux-3.3.2-static
     COMPILER: gcc-aarch64_generic-openwrt-linux-8.4.0-musl
 
 Build OpenWRT Binary (arm_cortex-a7_neon-vfpv4):
@@ -60,6 +65,7 @@ Build OpenWRT Binary (arm_cortex-a7_neon-vfpv4):
   variables:
     ARCHITECTURE: openwrt-arm_cortex-a7_neon-vfpv4
     QT_BUILD: qt-arm_cortex-a7_neon-vfpv4-openwrt-linux-5.15.4-shared
+    OPENSSL_BUILD: openssl-arm_cortex-a7_neon-vfpv4-openwrt-linux-3.3.2-static
     COMPILER: gcc-arm_cortex-a7_neon-vfpv4-openwrt-linux-8.4.0-musl
 
 Build OpenWRT Binary (arm_cortex-a9_neon):
@@ -67,6 +73,7 @@ Build OpenWRT Binary (arm_cortex-a9_neon):
   variables:
     ARCHITECTURE: openwrt-arm_cortex-a9_neon
     QT_BUILD: qt-arm_cortex-a9_neon-openwrt-linux-5.15.4-shared
+    OPENSSL_BUILD: openssl-arm_cortex-a9_neon-openwrt-linux-3.3.2-static
     COMPILER: gcc-arm_cortex-a9_neon-openwrt-linux-8.4.0-musl
 
 Build OpenWRT Binary (mips_24kc):
@@ -74,6 +81,7 @@ Build OpenWRT Binary (mips_24kc):
   variables:
     ARCHITECTURE: openwrt-mips_24kc
     QT_BUILD: qt-mips_24kc-openwrt-linux-5.15.4-shared
+    OPENSSL_BUILD: openssl-mips_24kc-openwrt-linux-3.3.2-static
     COMPILER: gcc-mips_24kc-openwrt-linux-8.4.0-musl
 
 Build OpenWRT Binary (mipsel_24kc):
@@ -81,6 +89,7 @@ Build OpenWRT Binary (mipsel_24kc):
   variables:
     ARCHITECTURE: openwrt-mipsel_24kc
     QT_BUILD: qt-mipsel_24kc-openwrt-linux-5.15.4-shared
+    OPENSSL_BUILD: openssl-mipsel_24kc-openwrt-linux-3.3.2-static
     COMPILER: gcc-mipsel_24kc-openwrt-linux-8.4.0-musl
 
 Build Keenetic NDMS Binary (aarch64-3.10):
@@ -88,6 +97,7 @@ Build Keenetic NDMS Binary (aarch64-3.10):
   variables:
     ARCHITECTURE: entware-aarch64-3.10
     QT_BUILD: qt-aarch64-openwrt-linux-gnu-5.15.4-shared
+    OPENSSL_BUILD: openssl-aarch64-openwrt-linux-gnu-3.3.2-static
     COMPILER: gcc-aarch64-openwrt-linux-gnu-8.4.0
 
 Build Keenetic NDMS Binary (mips-3.4):
@@ -95,6 +105,7 @@ Build Keenetic NDMS Binary (mips-3.4):
   variables:
     ARCHITECTURE: entware-mips-3.4
     QT_BUILD: qt-mips-openwrt-linux-gnu-5.15.4-shared
+    OPENSSL_BUILD: openssl-mips-openwrt-linux-gnu-3.3.2-static
     COMPILER: gcc-mips-openwrt-linux-gnu-8.4.0
 
 Build Keenetic NDMS Binary (mipsel-3.4):
@@ -102,4 +113,5 @@ Build Keenetic NDMS Binary (mipsel-3.4):
   variables:
     ARCHITECTURE: entware-mipsel-3.4
     QT_BUILD: qt-mipsel-openwrt-linux-gnu-5.15.4-shared
+    OPENSSL_BUILD: openssl-mipsel-openwrt-linux-gnu-3.3.2-static
     COMPILER: gcc-mipsel-openwrt-linux-gnu-8.4.0
