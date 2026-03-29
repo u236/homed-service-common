@@ -52,16 +52,11 @@
     PACKAGE_FILE: homed-common_${CI_COMMIT_TAG}_${ARCHITECTURE}.apk
     FEED_DIR: /var/www/apk.homed.dev/${ARCHITECTURE}
   script:
-  - "sed -i \"s+^pkgver =.*+pkgver = ${CI_COMMIT_TAG}-r0+g\" deploy/apk/.PKGINFO"
-  - "sed -i \"s+^arch =.*+arch = ${ARCHITECTURE}+g\" deploy/apk/.PKGINFO"
-  - "fakeroot tar -czf control.tar.gz -C deploy/apk ."
-  - "fakeroot tar -czf data.tar.gz -C deploy/data ."
-  - "cat control.tar.gz data.tar.gz > ${PACKAGE_FILE}"
+  - "apk mkpkg --sign /opt/apk/apk.key -I version:${CI_COMMIT_TAG} -I arch:${ARCHITECTURE} $(sed 's/ = /:/g' deploy/apk/.pkginfo | sed 's/^/-I /g' | tr '\\n' ' ') -F deploy/data -o ${PACKAGE_FILE}"
   - "mkdir -p ${FEED_DIR}"
   - "rm -f ${FEED_DIR}/homed-common_*"
   - "cp ${PACKAGE_FILE} ${FEED_DIR}"
-  - "apk index --allow-untrusted -o ${FEED_DIR}/APKINDEX.tar.gz ${FEED_DIR}/*.apk"
-  - "abuild-sign -k /opt/apk/apk.key ${FEED_DIR}/APKINDEX.tar.gz"
+  - "apk mkndx --allow-untrusted --sign /opt/apk/apk.key -o ${FEED_DIR}/packages.adb ${FEED_DIR}/*.apk"
   artifacts:
     paths:
     - ${PACKAGE_FILE}
