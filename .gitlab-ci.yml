@@ -19,7 +19,7 @@
     when: always
   - when: never
 
-.deploy_openwrt:
+.deploy_openwrt_ipk:
   stage: deploy
   variables:
     PACKAGE_FILE: homed-common_${CI_COMMIT_TAG}_${ARCHITECTURE}.ipk
@@ -37,6 +37,31 @@
   - "/opt/scripts/opkgIndex.sh ${FEED_DIR} > ${FEED_DIR}/Packages"
   - "/opt/opkg/usign -S -m ${FEED_DIR}/Packages -s /opt/opkg/opkg.key -x ${FEED_DIR}/Packages.sig"
   - "gzip -fk ${FEED_DIR}/Packages"
+  artifacts:
+    paths:
+    - ${PACKAGE_FILE}
+    expire_in: never
+  rules:
+  - if: $CI_COMMIT_TAG =~ /^\d.\d+.\d+$/
+    when: always
+  - when: never
+
+.deploy_openwrt_apk:
+  stage: deploy
+  variables:
+    PACKAGE_FILE: homed-common_${CI_COMMIT_TAG}_${ARCHITECTURE}.apk
+    FEED_DIR: /var/www/apk.homed.dev/${ARCHITECTURE}
+  script:
+  - "sed -i \"s+^pkgver =.*+pkgver = ${CI_COMMIT_TAG}-r0+g\" deploy/apk/.PKGINFO"
+  - "sed -i \"s+^arch =.*+arch = ${ARCHITECTURE}+g\" deploy/apk/.PKGINFO"
+  - "fakeroot tar -czf control.tar.gz -C deploy/apk ."
+  - "fakeroot tar -czf data.tar.gz -C deploy/data ."
+  - "cat control.tar.gz data.tar.gz > ${PACKAGE_FILE}"
+  - "mkdir -p ${FEED_DIR}"
+  - "rm -f ${FEED_DIR}/homed-common_*"
+  - "cp ${PACKAGE_FILE} ${FEED_DIR}"
+  - "apk index --allow-untrusted -o ${FEED_DIR}/APKINDEX.tar.gz ${FEED_DIR}/*.apk"
+  - "abuild-sign -k /opt/apk/apk.key ${FEED_DIR}/APKINDEX.tar.gz"
   artifacts:
     paths:
     - ${PACKAGE_FILE}
@@ -111,28 +136,53 @@ Deploy Linux Package (riscv64):
   variables:
     ARCHITECTURE: riscv64
 
-Deploy OpenWRT Package (aarch64_generic):
-  extends: .deploy_openwrt
+Deploy OpenWRT OPKG Package (aarch64_generic):
+  extends: .deploy_openwrt_ipk
   variables:
     ARCHITECTURE: aarch64_generic
 
-Deploy OpenWRT Package (arm_cortex-a7_neon-vfpv4):
-  extends: .deploy_openwrt
+Deploy OpenWRT OPKG Package (arm_cortex-a7_neon-vfpv4):
+  extends: .deploy_openwrt_ipk
   variables:
     ARCHITECTURE: arm_cortex-a7_neon-vfpv4
 
-Deploy OpenWRT Package (arm_cortex-a9_neon):
-  extends: .deploy_openwrt
+Deploy OpenWRT OPKG Package (arm_cortex-a9_neon):
+  extends: .deploy_openwrt_ipk
   variables:
     ARCHITECTURE: arm_cortex-a9_neon
 
-Deploy OpenWRT Package (mips_24kc):
-  extends: .deploy_openwrt
+Deploy OpenWRT OPKG Package (mips_24kc):
+  extends: .deploy_openwrt_ipk
   variables:
     ARCHITECTURE: mips_24kc
 
-Deploy OpenWRT Package (mipsel_24kc):
-  extends: .deploy_openwrt
+Deploy OpenWRT OPKG Package (mipsel_24kc):
+  extends: .deploy_openwrt_ipk
+  variables:
+    ARCHITECTURE: mipsel_24kc
+
+Deploy OpenWRT APK Package (aarch64_generic):
+  extends: .deploy_openwrt_apk
+  variables:
+    ARCHITECTURE: aarch64_generic
+
+Deploy OpenWRT APK Package (arm_cortex-a7_neon-vfpv4):
+  extends: .deploy_openwrt_apk
+  variables:
+    ARCHITECTURE: arm_cortex-a7_neon-vfpv4
+
+Deploy OpenWRT APK Package (arm_cortex-a9_neon):
+  extends: .deploy_openwrt_apk
+  variables:
+    ARCHITECTURE: arm_cortex-a9_neon
+
+Deploy OpenWRT APK Package (mips_24kc):
+  extends: .deploy_openwrt_apk
+  variables:
+    ARCHITECTURE: mips_24kc
+
+Deploy OpenWRT APK Package (mipsel_24kc):
+  extends: .deploy_openwrt_apk
   variables:
     ARCHITECTURE: mipsel_24kc
 
