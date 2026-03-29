@@ -49,12 +49,12 @@
 .deploy_openwrt_apk:
   stage: deploy
   variables:
-    PACKAGE_FILE: homed-common_${CI_COMMIT_TAG}_${ARCHITECTURE}.apk
+    PACKAGE_FILE: homed-common-${CI_COMMIT_TAG}.apk
     FEED_DIR: /var/www/apk.homed.dev/${ARCHITECTURE}
   script:
-  - "apk mkpkg --sign /opt/apk/apk.key -I version:${CI_COMMIT_TAG} -I arch:${ARCHITECTURE} $(sed 's/ = /:/g' deploy/apk/.pkginfo | sed 's/^/-I /g' | tr '\\n' ' ') -F deploy/data -o ${PACKAGE_FILE}"
+  - "ARGS=$(sed 's/ = /:/; s/.*/-I \"&\"/' deploy/apk/.pkginfo | tr '\\n' ' '); eval apk mkpkg --sign /opt/apk/apk.key -I version:${CI_COMMIT_TAG} -I arch:${ARCHITECTURE} $ARGS -F deploy/data -o ${PACKAGE_FILE}"
   - "mkdir -p ${FEED_DIR}"
-  - "rm -f ${FEED_DIR}/homed-common_*"
+  - "rm -f ${FEED_DIR}/homed-common-*"
   - "cp ${PACKAGE_FILE} ${FEED_DIR}"
   - "apk mkndx --allow-untrusted --sign /opt/apk/apk.key -o ${FEED_DIR}/packages.adb ${FEED_DIR}/*.apk"
   artifacts:
