@@ -9,6 +9,8 @@ HOMEd::HOMEd(const QString &version, const QString &configFile, bool multiple) :
     QDate date = QDate::currentDate();
     QString instance;
 
+    m_deviceServices = {"zigbee", "matter", "modbus", "custom", "ble"}; // "ble" is not oficial homed serivce meintoned by @avaks
+
     m_config = new QSettings(configFile.isEmpty() ? QString("/etc/homed/%1.conf").arg(QCoreApplication::applicationName()) : configFile, QSettings::IniFormat, this);
     m_watcher->addPath(m_config->fileName());
 
@@ -190,6 +192,17 @@ void HOMEd::mqttPublishStatus(bool online)
 QString HOMEd::mqttTopic(const QString &topic)
 {
     return QString("%1/%2").arg(m_mqttPrefix, topic);
+}
+
+QString HOMEd::deviceId(const QJsonObject &json, const QString &type)
+{
+    switch (m_deviceServices.indexOf(type))
+    {
+        case 0:  return json.value("ieeeAddress").toString();                                                  // zigbee
+        case 1:  return json.value("nodeId").toString();                                                       // matter
+        case 2:  return QString("%1.%2").arg(json.value("portId").toInt()).arg(json.value("slaveId").toInt()); // modbus
+        default: return json.value("id").toString();
+    }
 }
 
 bool HOMEd::writeFile(QFile &file, const QByteArray &data)
