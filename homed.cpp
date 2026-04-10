@@ -9,7 +9,8 @@ HOMEd::HOMEd(const QString &version, const QString &configFile, bool multiple) :
     QDate date = QDate::currentDate();
     QString instance;
 
-    m_deviceServices = {"zigbee", "matter", "modbus", "custom", "ble"}; // "ble" is not oficial homed serivce meintoned by @avaks
+    m_coreServices = {"automation", "cloud", "recorder", "web"};
+    m_deviceServices = {"zigbee", "matter", "modbus"};
 
     m_config = new QSettings(configFile.isEmpty() ? QString("/etc/homed/%1.conf").arg(QCoreApplication::applicationName()) : configFile, QSettings::IniFormat, this);
     m_watcher->addPath(m_config->fileName());

@@ -32,7 +32,7 @@ public:
     inline QString uniqueId(void) { return m_uniqueId; }
     inline bool mqttStatus(void) { return m_connected; }
 
-    inline QList <QString> &deviceServices(void) { return m_deviceServices; }
+    inline QList <QString> &coreServices(void) { return m_coreServices; }
 
     void mqttSubscribe(const QString &topic);
     void mqttUnsubscribe(const QString &topic);
@@ -59,7 +59,7 @@ private:
     quint32 m_interval;
     bool m_connected, m_first;
 
-    QList <QString> m_deviceServices;
+    QList <QString> m_coreServices, m_deviceServices;
 
 public slots:
 
