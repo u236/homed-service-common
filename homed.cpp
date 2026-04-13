@@ -67,7 +67,7 @@ HOMEd::HOMEd(const QString &version, const QString &configFile, bool multiple) :
 void HOMEd::quit(void)
 {
     logInfo << "Goodbye!";
-    mqttPublishStatus(false);
+    mqttPublishService(false);
     m_mqtt->disconnectFromHost();
 }
 
@@ -175,7 +175,7 @@ void HOMEd::mqttPublishDiscovery(const QString &name, const QString &version, co
     }
 }
 
-void HOMEd::mqttPublishStatus(bool online)
+void HOMEd::mqttPublishService(bool online)
 {
     QJsonObject json = {{"status", online ? "online" : "offline"}};
 
@@ -188,6 +188,11 @@ void HOMEd::mqttPublishStatus(bool online)
     }
 
     mqttPublish(mqttTopic("service/%1").arg(m_serviceTopic), json, true);
+}
+
+void HOMEd::mqttPublishStatus(const QJsonObject &json)
+{
+    mqttPublish(mqttTopic("status/%1").arg(m_serviceTopic), json, true);
 }
 
 QString HOMEd::basePath(void)
@@ -264,7 +269,7 @@ void HOMEd::reconnect(void)
 
 void HOMEd::publishStatus(void)
 {
-    mqttPublishStatus();
+    mqttPublishService();
 }
 
 void HOMEd::fileChanged(void)

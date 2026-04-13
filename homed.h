@@ -40,7 +40,8 @@ public:
     void mqttPublish(const QString &topic, const QJsonObject &json, bool retain = false);
     void mqttPublishString(const QString &topic, const QString &message, bool retain = false);
     void mqttPublishDiscovery(const QString &name, const QString &version, const QString &haPrefix, bool permitJoin = false);
-    void mqttPublishStatus(bool online = true);
+    void mqttPublishService(bool online = true);
+    void mqttPublishStatus(const QJsonObject &json);
 
     QString basePath(void);
     QString mqttTopic(const QString &topic = QString());
