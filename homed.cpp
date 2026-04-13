@@ -190,6 +190,11 @@ void HOMEd::mqttPublishStatus(bool online)
     mqttPublish(mqttTopic("service/%1").arg(m_serviceTopic), json, true);
 }
 
+QString HOMEd::basePath(void)
+{
+    return QString("/%1/").arg(QCoreApplication::applicationDirPath().split('/', Qt::SkipEmptyParts).value(0));
+}
+
 QString HOMEd::mqttTopic(const QString &topic)
 {
     return QString("%1/%2").arg(m_mqttPrefix, topic);

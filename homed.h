@@ -42,6 +42,7 @@ public:
     void mqttPublishDiscovery(const QString &name, const QString &version, const QString &haPrefix, bool permitJoin = false);
     void mqttPublishStatus(bool online = true);
 
+    QString basePath(void);
     QString mqttTopic(const QString &topic = QString());
     QString deviceId(const QJsonObject &json, const QString &type);
 

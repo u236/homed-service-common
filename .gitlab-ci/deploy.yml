@@ -96,7 +96,7 @@
     FEED_DIR: /var/www/entware.homed.su/${ARCHITECTURE}
   script:
   - "[[ -n ${PACKAGE_EXTRA} ]] && sh -c \"${PACKAGE_EXTRA}\""
-  - "[[ -f deploy/data/etc/homed/${NAME}.conf ]] && sed -i -e \"s\\=/opt/${NAME}\\=/opt/var/lib/${NAME}\\g\" -e \"s\\=/usr/share\\=/opt/share\\g\" -e \"s\\=/var/log\\=/opt/var/log\\g\" deploy/data/etc/homed/${NAME}.conf && mkdir -p deploy/data/opt/etc/homed && mv deploy/data/etc/homed/${NAME}.conf deploy/data/opt/etc/homed && rm -r deploy/data/etc"
+  - "[[ -f deploy/data/etc/homed/${NAME}.conf ]] && sed -i -e \"s\\=/opt/${NAME}\\=/opt/var/lib/${NAME}\\g\" -e \"s\\=/var/log\\=/opt/var/log\\g\" deploy/data/etc/homed/${NAME}.conf && mkdir -p deploy/data/opt/etc/homed && mv deploy/data/etc/homed/${NAME}.conf deploy/data/opt/etc/homed && rm -r deploy/data/etc"
   - "[[ -d deploy/data/usr/share/${NAME} ]] && mkdir -p deploy/data/opt/share && mv deploy/data/usr/share/${NAME} deploy/data/opt/share && rm -r deploy/data/usr"
   - "[[ -d deploy/data/opt/${NAME} ]] && mkdir -p deploy/data/opt/var/lib && mv deploy/data/opt/${NAME} deploy/data/opt/var/lib/${NAME}"
   - "mkdir -p deploy/data/opt/etc/init.d"
