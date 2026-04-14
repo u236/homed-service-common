@@ -4,7 +4,7 @@
 #include "homed.h"
 #include "logger.h"
 
-HOMEd::HOMEd(const QString &version, const QString &configFile, bool multiple) : QObject(nullptr), m_mqtt(new QMqttClient(this)), m_statusTimer(new QTimer(this)), m_reconnectTimer(new QTimer(this)), m_watcher(new QFileSystemWatcher(this)), m_connected(false), m_first(true)
+HOMEd::HOMEd(const QString &version, const QString &configFile, bool multiple) : QObject(nullptr), m_mqtt(new QMqttClient(this)), m_serviceTimer(new QTimer(this)), m_reconnectTimer(new QTimer(this)), m_watcher(new QFileSystemWatcher(this)), m_connected(false), m_first(true)
 {
     QDate date = QDate::currentDate();
     QString instance;
@@ -55,11 +55,11 @@ HOMEd::HOMEd(const QString &version, const QString &configFile, bool multiple) :
     connect(m_mqtt, &QMqttClient::messageReceived, this, &HOMEd::mqttReceived, Qt::QueuedConnection);
 
     connect(m_reconnectTimer, &QTimer::timeout, this, &HOMEd::reconnect, Qt::QueuedConnection);
-    connect(m_statusTimer, &QTimer::timeout, this, &HOMEd::publishStatus, Qt::QueuedConnection);
+    connect(m_serviceTimer, &QTimer::timeout, this, &HOMEd::publishService, Qt::QueuedConnection);
     connect(m_watcher, &QFileSystemWatcher::fileChanged, this, &HOMEd::fileChanged, Qt::QueuedConnection);
 
     m_reconnectTimer->setSingleShot(true);
-    m_statusTimer->setSingleShot(true);
+    m_serviceTimer->setSingleShot(true);
 
     m_mqtt->connectToHost();
 }
@@ -181,8 +181,8 @@ void HOMEd::mqttPublishService(bool online)
 
     if (online && m_interval)
     {
-        if (!m_statusTimer->isActive())
-            m_statusTimer->start(m_interval);
+        if (!m_serviceTimer->isActive())
+            m_serviceTimer->start(m_interval);
 
         json.insert("timestamp", QDateTime::currentSecsSinceEpoch());
     }
@@ -249,7 +249,7 @@ void HOMEd::connected(void)
 
 void HOMEd::disconnected(void)
 {
-    m_statusTimer->stop();
+    m_serviceTimer->stop();
     m_reconnectTimer->start(MQTT_RECONNECT_INTERVAL);
 
     if (!m_connected && !m_first)
@@ -267,7 +267,7 @@ void HOMEd::reconnect(void)
     m_mqtt->connectToHost();
 }
 
-void HOMEd::publishStatus(void)
+void HOMEd::publishService(void)
 {
     mqttPublishService();
 }

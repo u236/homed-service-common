@@ -52,7 +52,7 @@ public:
 private:
 
     QMqttClient *m_mqtt;
-    QTimer *m_statusTimer, *m_reconnectTimer;
+    QTimer *m_serviceTimer, *m_reconnectTimer;
 
     QFileSystemWatcher *m_watcher;
     QSettings *m_config;
@@ -76,7 +76,7 @@ private slots:
     void connected(void);
     void disconnected(void);
     void reconnect(void);
-    void publishStatus(void);
+    void publishService(void);
     void fileChanged(void);
 
 };
