@@ -400,7 +400,7 @@ void Parser::checkConditions(QList<QString> &list, const QString empty)
         {
             case 0: // is
             case 1: // not
-
+            {
                 switch (controlList.indexOf(list.at(4)))
                 {
                     case 0: check = list.at(2) != empty; break; // defined
@@ -412,6 +412,7 @@ void Parser::checkConditions(QList<QString> &list, const QString empty)
                     check = !check;
 
                 break;
+            }
 
             case 2: // contains
             case 3: // excludes
