@@ -255,7 +255,7 @@ QString Parser::transliterate(const QString& string)
     for (int i = 0; i < string.length(); i++)
         result += map.value(string.at(i), string.at(i));
 
-    return result.trimmed().replace(QRegularExpression("\\s+"), "_");
+    return result.trimmed().replace(QRegExp("\\s+"), "_");
 }
 
 QString Parser::formatValue(const QString &string)
@@ -389,7 +389,7 @@ QVariant Parser::stringValue(const QString &string)
 
 void Parser::checkConditions(QList<QString> &list, const QString empty)
 {
-    QList <QString> operatorList = {"is", "not", "==", "!=", ">", ">=", "<", "<="}, controlList = {"defined", "undefined", "number"};
+    QList <QString> operatorList = {"is", "not", "contains", "excludes", "==", "!=", ">", ">=", "<", "<="}, controlList = {"defined", "undefined", "number"};
 
     while (list.count() >= 7 && list.at(1) == "if" && list.at(5) == "else")
     {
@@ -408,17 +408,30 @@ void Parser::checkConditions(QList<QString> &list, const QString empty)
                     case 2: list.at(2).toDouble(&check); break; // number
                 }
 
-                if (index)
+                if (index == 1)
                     check = !check;
 
                 break;
 
-            case 2: check = list.at(2) == list.at(4); break;
-            case 3: check = list.at(2) != list.at(4); break;
-            case 4: check = list.at(2).toDouble() > list.at(4).toDouble(); break;
-            case 5: check = list.at(2).toDouble() >= list.at(4).toDouble(); break;
-            case 6: check = list.at(2).toDouble() < list.at(4).toDouble(); break;
-            case 7: check = list.at(2).toDouble() <= list.at(4).toDouble(); break;
+            case 2: // contains
+            case 3: // excludes
+            {
+                QString value = list.at(4);
+
+                check = value.startsWith('/') && value.endsWith('/') ? QRegExp(value.mid(1, value.length() - 2)).exactMatch(list.at(2)) : list.at(2).contains(value);
+
+                if (index == 3)
+                    check = !check;
+
+                break;
+            }
+
+            case 4: check = list.at(2) == list.at(4); break;
+            case 5: check = list.at(2) != list.at(4); break;
+            case 6: check = list.at(2).toDouble() > list.at(4).toDouble(); break;
+            case 7: check = list.at(2).toDouble() >= list.at(4).toDouble(); break;
+            case 8: check = list.at(2).toDouble() < list.at(4).toDouble(); break;
+            case 9: check = list.at(2).toDouble() <= list.at(4).toDouble(); break;
         }
 
         list = check ? list.mid(0, 1) : list.mid(6);
