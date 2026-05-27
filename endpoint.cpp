@@ -159,7 +159,7 @@ void AbstractDeviceObject::addExposeData(const Expose &expose, const QString &en
 
     if (expose->name() == "thermostat")
     {
-        static const QList <QString> exposes = {"systemMode", "operationMode", "targetTemperature", "runningStatus", "programTransitions", "programType"};
+        static const QList <QString> exposes = {"systemMode", "operationMode", "fanMode", "targetTemperature", "runningStatus", "programTransitions", "programType"};
 
         for (int i = 0; i < exposes.count(); i++)
         {
