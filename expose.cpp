@@ -66,14 +66,10 @@ QJsonObject SensorObject::request(void)
     QMap <QString, QVariant> options = option().toMap();
     QJsonObject json;
 
-    for (int i = 0; i < forceUpdate.count(); i++)
+    if (forceUpdate.contains(m_name.split('_').value(0)))
     {
-        if (!m_name.startsWith(forceUpdate.at(i)))
-            continue;
-
         valueTemplate.append("is_defined");
         json.insert("force_update", true);
-        break;
     }
 
     if (options.contains("round"))
