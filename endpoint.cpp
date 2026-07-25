@@ -189,11 +189,11 @@ void AbstractDeviceObject::addExposeData(const Expose &expose, const QString &en
 
 QVariant AbstractMetaObject::option(const QString &name, double defaultValue)
 {
+    AbstractDeviceObject *device = m_parent ? reinterpret_cast <AbstractDeviceObject*> (m_parent->device().data()) : nullptr;
     QVariant value;
 
-    if (m_parent)
+    if (device)
     {
-        AbstractDeviceObject *device = reinterpret_cast <AbstractDeviceObject*> (m_parent->device().data());
         QString optionName = name.isEmpty() ? m_name : name;
         QList <QString> list = optionName.split('_');
 
@@ -214,17 +214,20 @@ QVariant AbstractMetaObject::option(const QString &optionName, const QString &it
 
 quint8 AbstractMetaObject::version(void)
 {
-    return m_parent ? reinterpret_cast <AbstractDeviceObject*> (m_parent->device().data())->version() : 0;
+    AbstractDeviceObject *device = m_parent ? reinterpret_cast <AbstractDeviceObject*> (m_parent->device().data()) : nullptr;
+    return device ? device->version() : 0;
 }
 
 QString AbstractMetaObject::manufacturerName(void)
 {
-    return m_parent ? reinterpret_cast <AbstractDeviceObject*> (m_parent->device().data())->manufacturerName() : QString();
+    AbstractDeviceObject *device = m_parent ? reinterpret_cast <AbstractDeviceObject*> (m_parent->device().data()) : nullptr;
+    return device ? device->manufacturerName() : QString();
 }
 
 QString AbstractMetaObject::modelName(void)
 {
-    return m_parent ? reinterpret_cast <AbstractDeviceObject*> (m_parent->device().data())->modelName() : QString();
+    AbstractDeviceObject *device = m_parent ? reinterpret_cast <AbstractDeviceObject*> (m_parent->device().data()) : nullptr;
+    return device ? device->modelName() : QString();
 }
 
 QVariant AbstractMetaObject::meta(const QString &key, const QVariant &defaultValue)
