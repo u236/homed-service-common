@@ -72,6 +72,12 @@ QJsonObject SensorObject::request(void)
         json.insert("force_update", true);
     }
 
+    if (options.contains("state"))
+    {
+        QString state = options.value("state").toString();
+        json.insert("state_class", state == "increasing" ? "total_increasing" : state);
+    }
+
     if (options.contains("round"))
         valueTemplate.append(QString("round(%1)").arg(options.value("round").toInt()));
 
@@ -80,9 +86,6 @@ QJsonObject SensorObject::request(void)
 
     if (options.contains("class"))
         json.insert("device_class", options.value("class").toString());
-
-    if (options.contains("state"))
-        json.insert("state_class", options.value("state").toString());
 
     if (options.contains("unit"))
         json.insert("unit_of_measurement", options.value("unit").toString());
