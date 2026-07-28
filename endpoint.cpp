@@ -153,8 +153,10 @@ void AbstractDeviceObject::addExposeData(const Expose &expose, const QString &en
 
     if (expose->name().startsWith("light") && option.toStringList().contains("colorTemperature"))
     {
-        QVariant colorTemperature = expose->option("colorTemperature");
-        options.insert("colorTemperature", colorTemperature.isValid() ? colorTemperature : QMap <QString, QVariant> {{"min", 153}, {"max", 500}});
+        QList <QString> list = expose->name().split('_');
+        QString name = QRegExp("\\d+").exactMatch(list.value(1)) ? QString("colorTemperature_%1").arg(list.value(1)) : "colorTemperature";
+        QVariant colorTemperature = expose->option(name);
+        options.insert(name, colorTemperature.isValid() ? colorTemperature : QMap <QString, QVariant> {{"min", 153}, {"max", 500}});
     }
 
     if (expose->name() == "thermostat")
@@ -198,7 +200,7 @@ QVariant AbstractMetaObject::option(const QString &name, double defaultValue)
         QList <QString> list = optionName.split('_');
 
         if (list.count() < 2)
-            optionName.append(QString("_%2").arg(m_parent->id()));
+            optionName.append(QString("_%1").arg(m_parent->id()));
 
         value = device->options().contains(optionName) ? device->options().value(optionName) : device->options().value(list.at(0));
     }
