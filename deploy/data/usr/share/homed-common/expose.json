@@ -163,7 +163,7 @@
   "displayMode":                {"type": "select", "enum": ["celsius", "fahrenheit"]},
   "distanceMode":               {"type": "select", "enum": ["far", "middle", "near"], "icon": "mdi:arrow-left-right"},
   "fanMode":                    {"type": "select", "enum": ["off", "low", "medium", "high"], "icon": "mdi:fan"},
-  "indicatorMode":              {"type": "select", "enum": ["off", "default", "inverted", "on"], "icon": "mdi:lightbulb-on"},
+  "indicatorMode":              {"type": "select", "enum": ["off", "default", "inverted", "on"], "icon": "mdi:led-on"},
   "leftMode":                   {"type": "select", "enum": ["leftRelay", "rightRelay", "decoupled"]},
   "lightType":                  {"type": "select", "enum": ["led", "incandescent", "halogen"], "icon": "mdi:lightbulb-on"},
   "operationMode":              {"type": "select", "enum": ["command", "event"]},

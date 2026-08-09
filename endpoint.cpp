@@ -2,6 +2,13 @@
 #include "expose.h"
 #include "parser.h"
 
+void AbstractDeviceObject::updateOption(const QString &name, const QString &option, const QVariant &value)
+{
+    QMap <QString, QVariant> map = m_options.value(name).toMap();
+    map.insert(option, value);
+    m_options.insert(name, map);
+}
+
 void AbstractDeviceObject::publishExposes(HOMEd *controller, const QString &address, const QString uniqueId, const QString haPrefix, bool haEnabled, bool haUpdate, bool names, bool remove)
 {
     QMap <QString, QVariant> endpointNames = m_options.value("endpointName").toMap(), data;
