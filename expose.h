@@ -34,6 +34,8 @@ public:
     inline void setMultiple(bool value) { m_multiple = value; }
     
     inline bool discovery(void) { return m_discovery; }
+
+    static const QMap <QString, QList <QString>> &special(void);
     static void registerMetaTypes(void);
 
     QString title(void);

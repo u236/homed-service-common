@@ -1,5 +1,19 @@
 #include "expose.h"
 
+static const QMap <QString, QList <QString>> specialExposes =
+{
+    {"switch",      {"status"}},
+    {"lock",        {"status"}},
+    {"light",       {"status", "level", "color", "colorTemperature", "colorMode"}},
+    {"cover",       {"position"}},
+    {"thermostat",  {"temperature", "targetTemperature", "systemMode", "operationMode", "fanMode", "heatMode", "programType", "programTransitions", "runningStatus", "running"}}
+};
+
+const QMap <QString, QList <QString>> &ExposeObject::special(void)
+{
+    return specialExposes;
+}
+
 void ExposeObject::registerMetaTypes(void)
 {
     qRegisterMetaType <BinaryObject>        ("binaryExpose");

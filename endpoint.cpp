@@ -150,39 +150,49 @@ void AbstractDeviceObject::publishTriggers(HOMEd *controller, const Expose &expo
 
 void AbstractDeviceObject::addExposeData(const Expose &expose, const QString &endpointId, const QString &endpointName, QMap <QString, QVariant> &data)
 {
-    QVariant option = expose->option();
-    QString key = !endpointId.isEmpty() ? endpointId : "common", yandexType = expose->option("yandexType").toString();
+    QVariant exposeOption = expose->option();
+    QString key = !endpointId.isEmpty() ? endpointId : "common", yandexType = expose->option("yandexType").toString(), suffix;
     QMap <QString, QVariant> map = data.value(key).toMap(), options = map.value("options").toMap();
-    QList <QString> items = map.value("items").toStringList();
+    QList <QString> list = expose->name().split('_'), items = map.value("items").toStringList(), properties = ExposeObject::special().value(list.value(0));
 
+    suffix = QRegExp("\\d+").exactMatch(list.value(1)) ? QString("_%1").arg(list.value(1)) : QString();
     items.append(expose->name());
     map.insert("items", QVariant(items));
 
-    if (expose->name().startsWith("light") && option.toStringList().contains("colorTemperature"))
+    for (int i = 0; i < properties.count(); i++)
     {
-        QList <QString> list = expose->name().split('_');
-        QString name = QRegExp("\\d+").exactMatch(list.value(1)) ? QString("colorTemperature_%1").arg(list.value(1)) : "colorTemperature";
-        QVariant colorTemperature = expose->option(name);
-        options.insert(name, colorTemperature.isValid() ? colorTemperature : QMap <QString, QVariant> {{"min", 153}, {"max", 500}});
+        QString property = QString(properties.at(i)).append(suffix), icon = expose->option(property).toMap().value("icon").toString();
+
+        if (options.contains(property) || icon.isEmpty())
+            continue;
+
+        options.insert(property, QMap <QString, QVariant> {{"icon", icon}});
     }
 
-    if (expose->name() == "thermostat")
+    if (list.value(0) == "light" && exposeOption.toStringList().contains("colorTemperature"))
     {
-        static const QList <QString> exposes = {"systemMode", "operationMode", "fanMode", "targetTemperature", "runningStatus", "programTransitions", "programType"};
+        QString property = QString("colorTemperature").append(suffix);
+        QVariant option = expose->option(property);
+        options.insert(property, option.isValid() ? option : QMap <QString, QVariant> {{"min", 153}, {"max", 500}});
+    }
 
-        for (int i = 0; i < exposes.count(); i++)
+    if (list.value(0) == "thermostat")
+    {
+        QList <QString> controls = {"targetTemperature", "systemMode", "operationMode", "fanMode", "heatMode", "programType", "programTransitions", "runningStatus"};
+
+        for (int i = 0; i < controls.count(); i++)
         {
-            QVariant item = expose->option(exposes.at(i));
+            QVariant option = expose->option(controls.at(i));
 
-            if (!item.isValid())
+            if (!option.isValid())
                 continue;
 
-            options.insert(exposes.at(i), item);
+            options.insert(controls.at(i), option);
         }
     }
 
-    if (option.isValid())
-        options.insert(expose->name(), option);
+    if (exposeOption.isValid())
+        options.insert(expose->name(), exposeOption);
 
     if (expose->multiple() && !endpointName.isEmpty())
         options.insert("name", endpointName);
