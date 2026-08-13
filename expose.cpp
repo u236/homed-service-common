@@ -253,8 +253,8 @@ QJsonObject SwitchObject::request(void)
 QJsonObject LightObject::request(void)
 {
     QList <QString> list = m_name.split('_'), options = option().toStringList();
-    QJsonObject json;
     QString suffix;
+    QJsonObject json;
 
     if (QRegExp("\\d+").exactMatch(list.value(1)))
         suffix = QString("_%1").arg(list.value(1));
@@ -309,14 +309,14 @@ QJsonObject LightObject::request(void)
 
 QJsonObject CoverObject::request(void)
 {
-    QList <QString> list = m_name.split('_');
+    QList <QString> list = m_name.split('_'), deviceClass = {"awning", "blind", "curtain", "garage", "gate", "shutter", "window"};
+    QString type = option().toString(), suffix;
     QJsonObject json;
-    QString suffix;
 
     if (QRegExp("\\d+").exactMatch(list.value(1)))
         suffix = QString("_%1").arg(list.value(1));
 
-    json.insert("device_class", option().toString() == "blind" ? "blind" : "curtain");
+    json.insert("device_class", deviceClass.contains(type) ? type : type == "screen" ? "blind" : "curtain");
 
     json.insert("value_template", QString("{{ value_json.cover%1 }}").arg(suffix));
     json.insert("state_open", "open");
