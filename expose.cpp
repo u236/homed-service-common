@@ -36,12 +36,22 @@ QString ExposeObject::title(void)
     if (title.isEmpty())
     {
         QList <QString> list = QString(m_name).replace('_', 0x20).replace(QRegExp("([A-Z])"), " \\1").toLower().split(0x20);
-        QMap <QString, QString> replacement = {{"co2", "CO2"}, {"eco2", "eCO2"}, {"pm", "PM"}, {"pm1", "PM1"}, {"pm4", "PM4"}, {"pm10", "PM10"}, {"pm25", "PM2.5"}, {"uv", "UV"}, {"voc", "VOC"}};
+        QMap <QString, QString> replacement = {{"co2", "CO2"}, {"ec", "EC"}, {"eco2", "eCO2"}, {"pm", "PM"}, {"pm1", "PM1"}, {"pm4", "PM4"}, {"pm10", "PM10"}, {"pm25", "PM2.5"}, {"sg", "SG"}, {"tds", "TDS"}, {"uv", "UV"}, {"voc", "VOC"}};
+        QString part = list.value(0);
 
-        if (replacement.contains(list.value(0)))
-            list.replace(0, replacement.value(list.value(0)));
+        list.replace(0, replacement.contains(part) ? replacement.value(part) : part.replace(0, 1, part.at(0).toUpper()));
 
-        return list.join(0x20).replace(0, 1, list.value(0).at(0).toUpper());
+        for (int i = 0; i < list.count(); i++)
+        {
+            part = list.at(i).toLower();
+
+            if (part != "id" && part != "ir" && !QRegExp("^[pt]\\d+$").exactMatch(part))
+                continue;
+
+            list.replace(i, part.toUpper());
+        }
+
+        return list.join(0x20);
     }
     else
     {
