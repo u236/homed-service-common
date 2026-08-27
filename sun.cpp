@@ -35,14 +35,14 @@ double Sun::position(void)
     return 1 - sin(M_PI * (QDateTime::currentDateTime().time().msecsSinceStartOfDay() - sunrise) / (sunset - sunrise));
 }
 
-double Sun::julianCentury(double day)
-{
-    return (day - 2451545) / 36525;
-}
-
 double Sun::julianDay(double century)
 {
     return century * 36525 + 2451545;
+}
+
+double Sun::julianCentury(double day)
+{
+    return (day - 2451545) / 36525;
 }
 
 double Sun::meanSunAnomaly(double t)

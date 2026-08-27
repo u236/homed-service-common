@@ -64,13 +64,6 @@ HOMEd::HOMEd(const QString &version, const QString &configFile, bool multiple) :
     m_mqtt->connectToHost();
 }
 
-void HOMEd::quit(void)
-{
-    logInfo << "Goodbye!";
-    mqttPublishService(false);
-    m_mqtt->disconnectFromHost();
-}
-
 void HOMEd::mqttSubscribe(const QString &topic)
 {
     m_mqtt->subscribe(topic, MQTT_DEFAULT_QOS);
@@ -238,6 +231,13 @@ bool HOMEd::writeFile(QFile &file, const QByteArray &data)
         system("sync");
 
     return check;
+}
+
+void HOMEd::quit(void)
+{
+    logInfo << "Goodbye!";
+    mqttPublishService(false);
+    m_mqtt->disconnectFromHost();
 }
 
 void HOMEd::connected(void)
