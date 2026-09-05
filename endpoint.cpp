@@ -178,7 +178,7 @@ void AbstractDeviceObject::addExposeData(const Expose &expose, const QString &en
 
     if (list.value(0) == "thermostat")
     {
-        QList <QString> controls = {"targetTemperature", "systemMode", "operationMode", "fanMode", "heatMode", "programType", "programTransitions", "runningStatus"};
+        QList <QString> controls = {"targetTemperature", "systemMode", "operationMode", "fanMode", "swingMode", "heatMode", "programType", "programTransitions", "runningStatus"};
 
         for (int i = 0; i < controls.count(); i++)
         {

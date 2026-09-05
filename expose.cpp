@@ -6,7 +6,7 @@ static const QMap <QString, QList <QString>> specialExposes =
     {"lock",        {"status"}},
     {"light",       {"status", "level", "color", "colorTemperature", "colorMode"}},
     {"cover",       {"position"}},
-    {"thermostat",  {"temperature", "targetTemperature", "systemMode", "operationMode", "fanMode", "heatMode", "programType", "programTransitions", "runningStatus", "running"}}
+    {"thermostat",  {"temperature", "targetTemperature", "systemMode", "operationMode", "fanMode", "swingMode", "heatMode", "programType", "programTransitions", "runningStatus", "running"}}
 };
 
 const QMap <QString, QList <QString>> &ExposeObject::special(void)
@@ -369,7 +369,7 @@ QJsonObject LockObject::request(void)
 
 QJsonObject ThermostatObject::request(void)
 {
-    QList <QString> operationMode = option("operationMode", "enum").toStringList(), fanMode = option("fanMode", "enum").toStringList(), systemMode = option("systemMode", "enum").toStringList();
+    QList <QString> systemMode = option("systemMode", "enum").toStringList(), operationMode = option("operationMode", "enum").toStringList(), fanMode = option("fanMode", "enum").toStringList(), swingMode = option("swingMode", "enum").toStringList();
     QMap <QString, QVariant> targetTemperature = option("targetTemperature").toMap();
     QJsonObject json;
 
@@ -399,6 +399,17 @@ QJsonObject ThermostatObject::request(void)
         json.insert("action_topic", m_stateTopic);
     }
 
+    if (!operationMode.isEmpty())
+    {
+        json.insert("preset_modes", QJsonArray::fromStringList(operationMode));
+
+        json.insert("preset_mode_value_template", "{{ value_json.operationMode }}");
+        json.insert("preset_mode_state_topic", m_stateTopic);
+
+        json.insert("preset_mode_command_template", "{\"operationMode\":\"{{ value }}\"}");
+        json.insert("preset_mode_command_topic", m_commandTopic);
+    }
+
     if (!fanMode.isEmpty())
     {
         json.insert("fan_modes", QJsonArray::fromStringList(fanMode));
@@ -410,15 +421,15 @@ QJsonObject ThermostatObject::request(void)
         json.insert("fan_mode_command_topic", m_commandTopic);
     }
 
-    if (!operationMode.isEmpty())
+    if (!swingMode.isEmpty())
     {
-        json.insert("preset_modes", QJsonArray::fromStringList(operationMode));
+        json.insert("swing_modes", QJsonArray::fromStringList(swingMode));
 
-        json.insert("preset_mode_value_template", "{{ value_json.operationMode }}");
-        json.insert("preset_mode_state_topic", m_stateTopic);
+        json.insert("swing_mode_state_template", "{{ value_json.swingMode }}");
+        json.insert("swing_mode_state_topic", m_stateTopic);
 
-        json.insert("preset_mode_command_template", "{\"operationMode\":\"{{ value }}\"}");
-        json.insert("preset_mode_command_topic", m_commandTopic);
+        json.insert("swing_mode_command_template", "{\"swingMode\":\"{{ value }}\"}");
+        json.insert("swing_mode_command_topic", m_commandTopic);
     }
 
     if (targetTemperature.contains("min"))
