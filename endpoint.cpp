@@ -191,6 +191,21 @@ void AbstractDeviceObject::addExposeData(const Expose &expose, const QString &en
         }
     }
 
+    if (list.value(0) == "media")
+    {
+        QList <QString> controls = {"volume", "input", "mute", "pause"};
+
+        for (int i = 0; i < controls.count(); i++)
+        {
+            QVariant option = expose->option(controls.at(i));
+
+            if (!option.isValid())
+                continue;
+
+            options.insert(controls.at(i), option);
+        }
+    }
+
     if (exposeOption.isValid())
         options.insert(expose->name(), exposeOption);
 
