@@ -9,12 +9,42 @@ void AbstractDeviceObject::updateOption(const QString &name, const QString &opti
     m_options.insert(name, map);
 }
 
+void AbstractDeviceObject::updateMediaOptions(void)
+{
+    QList <QString> controls = m_options.value("media").toStringList();
+    QMap <QString, QVariant> map;
+
+    if (controls.isEmpty())
+        return;
+
+    map.insert("input",  QMap <QString, QVariant> {{"type", "select"}, {"control", true}, {"icon", "mdi:video-input-hdmi"}});
+    map.insert("volume", QMap <QString, QVariant> {{"type", "number"}, {"min", 1}, {"max", 100}, {"control", true}, {"unit", "%"}, {"icon", "mdi:volume-high"}});
+    map.insert("mute",   QMap <QString, QVariant> {{"type", "toggle"}, {"control", true}, {"icon", "mdi:volume-off"}});
+    map.insert("pause",  QMap <QString, QVariant> {{"type", "toggle"}, {"control", true}, {"icon", "mdi:pause"}});
+
+    if (controls.contains("input") && m_options.value("input").toMap().value("enum").toList().isEmpty())
+    {
+        controls.removeAll("input");
+        m_options.insert("media", QVariant(controls));
+    }
+
+    for (int i = 0; i < controls.count(); i++)
+    {
+        QString control = controls.at(i);
+        QMap <QString, QVariant> option = map.value(control).toMap();
+        option.insert(m_options.value(control).toMap());
+        m_options.insert(control, option);
+    }
+}
+
 void AbstractDeviceObject::publishExposes(HOMEd *controller, const QString &address, const QString uniqueId, const QString haPrefix, bool haEnabled, bool haUpdate, bool names, bool remove)
 {
-    QMap <QString, QVariant> endpointNames = m_options.value("endpointName").toMap(), data;
+    QMap <QString, QVariant> endpointNames = m_options.value("endpointName").toMap(), options = m_options, data;
     QString deviceTopic = names ? m_name : address;
     QJsonObject identity;
     QJsonArray availability;
+
+    updateMediaOptions();
 
     if (m_discovery && haEnabled && !remove)
     {
@@ -49,6 +79,7 @@ void AbstractDeviceObject::publishExposes(HOMEd *controller, const QString &addr
     }
 
     controller->mqttPublish(controller->mqttTopic("expose/%1/%2").arg(controller->serviceTopic(), deviceTopic), QJsonObject::fromVariantMap(data), true);
+    m_options = options;
 }
 
 void AbstractDeviceObject::publishDiscovery(HOMEd *controller, const Expose &expose, const QJsonObject &identity, const QJsonArray &availability, const QString &deviceTopic, const QString &endpointId, const QString &endpointName, const QString &uniqueId, const QString &haPrefix, bool haUpdate, bool remove)
@@ -97,15 +128,14 @@ void AbstractDeviceObject::publishDiscovery(HOMEd *controller, const Expose &exp
 
 void AbstractDeviceObject::publishMedia(HOMEd *controller, const Expose &expose, const QJsonObject &identity, const QJsonArray &availability, const QString &deviceTopic, const QString &endpointId, const QString &endpointName, const QString &uniqueId, const QString &haPrefix, bool haUpdate, bool remove)
 {
-    QMap <QString, QString> map = {{"input", "selectExpose"}, {"volume", "numberExpose"}, {"mute", "toggleExpose"}, {"pause", "toggleExpose"}};
     QList <QString> controls = expose->option().toStringList(), properties = ExposeObject::special().value("media");
 
     for (int i = 0; i < properties.count(); i++)
     {
         QString property = properties.at(i);
-        int type = QMetaType::type(map.value(property).toUtf8());
+        int type = QMetaType::type(expose->option(property, "type").toString().append("Expose").toUtf8());
 
-        if (type && controls.contains(property) && (property != "input" || !expose->option("input").toMap().value("enum").toList().isEmpty()))
+        if (type && controls.contains(property))
         {
             Expose item(reinterpret_cast <ExposeObject*> (QMetaType::create(type)));
             item->setName(property);
@@ -199,45 +229,17 @@ void AbstractDeviceObject::addExposeData(const Expose &expose, const QString &en
         options.insert(property, option.isValid() ? option : QMap <QString, QVariant> {{"min", 153}, {"max", 500}});
     }
 
-    if (list.value(0) == "media")
+    if (list.value(0) == "media" || list.value(0) == "thermostat")
     {
-        QList <QString> controls = exposeOption.toStringList();
-
-        if (controls.contains("input") && expose->option("input").toMap().value("enum").toList().isEmpty())
+        for (int i = 0; i < properties.count(); i++)
         {
-            controls.removeAll("input");
-            exposeOption = QVariant(controls);
-        }
+            QString property = properties.at(i);
+            QVariant option = expose->option(property);
 
-        for (int i = 0; i < controls.count(); i++)
-        {
-            QString control = controls.at(i);
-            QVariant option = expose->option(control);
-
-            if (!option.isValid())
-            {
-                if (control != "volume")
-                    continue;
-
-                option = QMap <QString, QVariant> {{"min", 1}, {"max", 100}};
-            }
-
-            options.insert(control, option);
-        }
-    }
-
-    if (list.value(0) == "thermostat")
-    {
-        QList <QString> controls = {"targetTemperature", "systemMode", "operationMode", "fanMode", "swingMode", "heatMode", "programType", "programTransitions", "runningStatus"};
-
-        for (int i = 0; i < controls.count(); i++)
-        {
-            QVariant option = expose->option(controls.at(i));
-
-            if (!option.isValid())
+            if (property == "temperature" || property == "running" || !option.isValid())
                 continue;
 
-            options.insert(controls.at(i), option);
+            options.insert(property, option);
         }
     }
 
