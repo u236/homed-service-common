@@ -9,12 +9,60 @@ void AbstractDeviceObject::updateOption(const QString &name, const QString &opti
     m_options.insert(name, map);
 }
 
+void AbstractDeviceObject::updateMediaOptions(void)
+{
+    QList <QString> properties = m_options.value("media").toStringList();
+    QMap <QString, QVariant> map;
+
+    if (properties.isEmpty())
+        return;
+
+    map.insert("input",  QMap <QString, QVariant> {{"type", "select"}, {"control", true}, {"icon", "mdi:video-input-hdmi"}});
+    map.insert("volume", QMap <QString, QVariant> {{"type", "number"}, {"min", 1}, {"max", 100}, {"control", true}, {"unit", "%"}, {"icon", "mdi:volume-high"}});
+    map.insert("mute",   QMap <QString, QVariant> {{"type", "toggle"}, {"control", true}, {"icon", "mdi:volume-off"}});
+    map.insert("pause",  QMap <QString, QVariant> {{"type", "toggle"}, {"control", true}, {"icon", "mdi:pause"}});
+
+    if (properties.contains("input") && m_options.value("input").toMap().value("enum").toList().isEmpty())
+    {
+        properties.removeAll("input");
+        m_options.insert("media", QVariant(properties));
+    }
+
+    for (int i = 0; i < properties.count(); i++)
+    {
+        QString property = properties.at(i);
+        QMap <QString, QVariant> option = map.value(property).toMap();
+        option.insert(m_options.value(property).toMap());
+        m_options.insert(property, option);
+    }
+}
+
+void AbstractDeviceObject::updateThermostatOptions(void)
+{
+    QList <QString> properties = {"targetTemperature", "systemMode", "operationMode", "fanMode", "swingMode", "heatMode"};
+
+    for (int i = 0; i < properties.count(); i++)
+    {
+        QString property = properties.at(i);
+        QMap <QString, QVariant> option = {{"type", property == "targetTemperature" ? "number" : "select"}};
+
+        if (!m_options.contains(property))
+            continue;
+
+        option.insert(m_options.value(property).toMap());
+        m_options.insert(property, option);
+    }
+}
+
 void AbstractDeviceObject::publishExposes(HOMEd *controller, const QString &address, const QString uniqueId, const QString haPrefix, bool haEnabled, bool haUpdate, bool names, bool remove)
 {
-    QMap <QString, QVariant> endpointNames = m_options.value("endpointName").toMap(), data;
+    QMap <QString, QVariant> endpointNames = m_options.value("endpointName").toMap(), options = m_options, data;
     QString deviceTopic = names ? m_name : address;
     QJsonObject identity;
     QJsonArray availability;
+
+    updateMediaOptions();
+    updateThermostatOptions();
 
     if (m_discovery && haEnabled && !remove)
     {
@@ -49,6 +97,7 @@ void AbstractDeviceObject::publishExposes(HOMEd *controller, const QString &addr
     }
 
     controller->mqttPublish(controller->mqttTopic("expose/%1/%2").arg(controller->serviceTopic(), deviceTopic), QJsonObject::fromVariantMap(data), true);
+    m_options = options;
 }
 
 void AbstractDeviceObject::publishDiscovery(HOMEd *controller, const Expose &expose, const QJsonObject &identity, const QJsonArray &availability, const QString &deviceTopic, const QString &endpointId, const QString &endpointName, const QString &uniqueId, const QString &haPrefix, bool haUpdate, bool remove)
@@ -86,10 +135,32 @@ void AbstractDeviceObject::publishDiscovery(HOMEd *controller, const Expose &exp
 
     controller->mqttPublish(QString("%1/%2/%3/%4/config").arg(haPrefix, expose->component(), uniqueId, object), json, true);
 
+    if (expose->name() == "media")
+        publishMedia(controller, expose, identity, availability, deviceTopic, endpointId, endpointName, uniqueId, haPrefix, haUpdate, remove);
+
     if (!trigger.contains(expose->name().split('_').value(0)))
         return;
 
     publishTriggers(controller, expose, identity, availability, endpointId, endpointName, uniqueId, haPrefix, object, title, remove);
+}
+
+void AbstractDeviceObject::publishMedia(HOMEd *controller, const Expose &expose, const QJsonObject &identity, const QJsonArray &availability, const QString &deviceTopic, const QString &endpointId, const QString &endpointName, const QString &uniqueId, const QString &haPrefix, bool haUpdate, bool remove)
+{
+    QList <QString> controls = expose->option().toStringList(), properties = ExposeObject::special().value("media");
+
+    for (int i = 0; i < properties.count(); i++)
+    {
+        QString property = properties.at(i);
+        int type = QMetaType::type(expose->option(property, "type").toString().append("Expose").toUtf8());
+
+        if (type && controls.contains(property))
+        {
+            Expose item(reinterpret_cast <ExposeObject*> (QMetaType::create(type)));
+            item->setName(property);
+            item->setParent(expose->parent());
+            publishDiscovery(controller, item, identity, availability, deviceTopic, endpointId, endpointName, uniqueId, haPrefix, haUpdate, remove);
+        }
+    }
 }
 
 void AbstractDeviceObject::publishTriggers(HOMEd *controller, const Expose &expose, const QJsonObject &identity, const QJsonArray &availability, const QString &endpointId, const QString &endpointName, const QString &uniqueId, const QString &haPrefix, const QString &object, const QString &title, bool remove)
@@ -176,18 +247,17 @@ void AbstractDeviceObject::addExposeData(const Expose &expose, const QString &en
         options.insert(property, option.isValid() ? option : QMap <QString, QVariant> {{"min", 153}, {"max", 500}});
     }
 
-    if (list.value(0) == "thermostat")
+    if (list.value(0) == "media" || list.value(0) == "thermostat")
     {
-        QList <QString> controls = {"targetTemperature", "systemMode", "operationMode", "fanMode", "swingMode", "heatMode", "programType", "programTransitions", "runningStatus"};
-
-        for (int i = 0; i < controls.count(); i++)
+        for (int i = 0; i < properties.count(); i++)
         {
-            QVariant option = expose->option(controls.at(i));
+            QString property = properties.at(i);
+            QVariant option = expose->option(property);
 
-            if (!option.isValid())
+            if (property == "temperature" || property == "running" || !option.isValid())
                 continue;
 
-            options.insert(controls.at(i), option);
+            options.insert(property, option);
         }
     }
 

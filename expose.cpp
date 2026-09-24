@@ -5,6 +5,7 @@ static const QMap <QString, QList <QString>> specialExposes =
     {"switch",      {"status"}},
     {"lock",        {"status"}},
     {"light",       {"status", "level", "color", "colorTemperature", "colorMode"}},
+    {"media",       {"status", "input", "volume", "mute", "pause"}},
     {"cover",       {"position"}},
     {"thermostat",  {"temperature", "targetTemperature", "systemMode", "operationMode", "fanMode", "swingMode", "heatMode", "programType", "programTransitions", "runningStatus", "running"}}
 };
@@ -23,9 +24,10 @@ void ExposeObject::registerMetaTypes(void)
     qRegisterMetaType <SelectObject>        ("selectExpose");
     qRegisterMetaType <ButtonObject>        ("buttonExpose");
     qRegisterMetaType <SwitchObject>        ("switchExpose");
-    qRegisterMetaType <LightObject>         ("lightExpose");
-    qRegisterMetaType <CoverObject>         ("coverExpose");
     qRegisterMetaType <LockObject>          ("lockExpose");
+    qRegisterMetaType <LightObject>         ("lightExpose");
+    qRegisterMetaType <MediaObject>         ("mediaExpose");
+    qRegisterMetaType <CoverObject>         ("coverExpose");
     qRegisterMetaType <ThermostatObject>    ("thermostatExpose");
 }
 
@@ -260,6 +262,26 @@ QJsonObject SwitchObject::request(void)
     return json;
 }
 
+QJsonObject LockObject::request(void)
+{
+    QString name = QString(m_name).replace("lock", "status");
+    QJsonObject json;
+
+    if (option().toString() == "valve")
+        json.insert("icon", "mdi:pipe-valve");
+
+    json.insert("value_template", QString("{{ value_json.%1 }}").arg(name));
+    json.insert("state_locked", "off");
+    json.insert("state_unlocked", "on");
+    json.insert("state_topic", m_stateTopic);
+
+    json.insert("payload_lock", QString("{\"%1\":\"off\"}").arg(name));
+    json.insert("payload_unlock", QString("{\"%1\":\"on\"}").arg(name));
+    json.insert("command_topic", m_commandTopic);
+
+    return json;
+}
+
 QJsonObject LightObject::request(void)
 {
     QList <QString> list = m_name.split('_'), options = option().toStringList();
@@ -317,6 +339,24 @@ QJsonObject LightObject::request(void)
     return json;
 }
 
+QJsonObject MediaObject::request(void)
+{
+    QJsonObject json;
+
+    json.insert("icon", "mdi:television");
+
+    json.insert("value_template", "{{ value_json.status }}");
+    json.insert("state_on", "on");
+    json.insert("state_off", "off");
+    json.insert("state_topic", m_stateTopic);
+
+    json.insert("payload_on", "{\"status\":\"on\"}");
+    json.insert("payload_off", "{\"status\":\"off\"}");
+    json.insert("command_topic", m_commandTopic);
+
+    return json;
+}
+
 QJsonObject CoverObject::request(void)
 {
     QList <QString> list = m_name.split('_'), deviceClass = {"awning", "blind", "curtain", "garage", "gate", "shutter", "window"};
@@ -343,26 +383,6 @@ QJsonObject CoverObject::request(void)
 
     json.insert("set_position_template", QString("{\"position%1\":{{ position }}}").arg(suffix));
     json.insert("set_position_topic", m_commandTopic);
-
-    return json;
-}
-
-QJsonObject LockObject::request(void)
-{
-    QString name = QString(m_name).replace("lock", "status");
-    QJsonObject json;
-
-    if (option().toString() == "valve")
-        json.insert("icon", "mdi:pipe-valve");
-
-    json.insert("value_template", QString("{{ value_json.%1 }}").arg(name));
-    json.insert("state_locked", "off");
-    json.insert("state_unlocked", "on");
-    json.insert("state_topic", m_stateTopic);
-
-    json.insert("payload_lock", QString("{\"%1\":\"off\"}").arg(name));
-    json.insert("payload_unlock", QString("{\"%1\":\"on\"}").arg(name));
-    json.insert("command_topic", m_commandTopic);
 
     return json;
 }
