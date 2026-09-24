@@ -11,10 +11,10 @@ void AbstractDeviceObject::updateOption(const QString &name, const QString &opti
 
 void AbstractDeviceObject::updateMediaOptions(void)
 {
-    QList <QString> controls = m_options.value("media").toStringList();
+    QList <QString> properties = m_options.value("media").toStringList();
     QMap <QString, QVariant> map;
 
-    if (controls.isEmpty())
+    if (properties.isEmpty())
         return;
 
     map.insert("input",  QMap <QString, QVariant> {{"type", "select"}, {"control", true}, {"icon", "mdi:video-input-hdmi"}});
@@ -22,18 +22,35 @@ void AbstractDeviceObject::updateMediaOptions(void)
     map.insert("mute",   QMap <QString, QVariant> {{"type", "toggle"}, {"control", true}, {"icon", "mdi:volume-off"}});
     map.insert("pause",  QMap <QString, QVariant> {{"type", "toggle"}, {"control", true}, {"icon", "mdi:pause"}});
 
-    if (controls.contains("input") && m_options.value("input").toMap().value("enum").toList().isEmpty())
+    if (properties.contains("input") && m_options.value("input").toMap().value("enum").toList().isEmpty())
     {
-        controls.removeAll("input");
-        m_options.insert("media", QVariant(controls));
+        properties.removeAll("input");
+        m_options.insert("media", QVariant(properties));
     }
 
-    for (int i = 0; i < controls.count(); i++)
+    for (int i = 0; i < properties.count(); i++)
     {
-        QString control = controls.at(i);
-        QMap <QString, QVariant> option = map.value(control).toMap();
-        option.insert(m_options.value(control).toMap());
-        m_options.insert(control, option);
+        QString property = properties.at(i);
+        QMap <QString, QVariant> option = map.value(property).toMap();
+        option.insert(m_options.value(property).toMap());
+        m_options.insert(property, option);
+    }
+}
+
+void AbstractDeviceObject::updateThermostatOptions(void)
+{
+    QList <QString> properties = {"targetTemperature", "systemMode", "operationMode", "fanMode", "swingMode", "heatMode"};
+
+    for (int i = 0; i < properties.count(); i++)
+    {
+        QString property = properties.at(i);
+        QMap <QString, QVariant> option = {{"type", property == "targetTemperature" ? "number" : "select"}};
+
+        if (!m_options.contains(property))
+            continue;
+
+        option.insert(m_options.value(property).toMap());
+        m_options.insert(property, option);
     }
 }
 
@@ -45,6 +62,7 @@ void AbstractDeviceObject::publishExposes(HOMEd *controller, const QString &addr
     QJsonArray availability;
 
     updateMediaOptions();
+    updateThermostatOptions();
 
     if (m_discovery && haEnabled && !remove)
     {

@@ -95,6 +95,7 @@ public:
 private:
 
     void updateMediaOptions(void);
+    void updateThermostatOptions(void);
 
     void publishDiscovery(HOMEd *controller, const Expose &expose, const QJsonObject &identity, const QJsonArray &availability, const QString &deviceTopic, const QString &endpointId, const QString &endpointName, const QString &uniqueId, const QString &haPrefix, bool haUpdate, bool remove);
     void publishMedia(HOMEd *controller, const Expose &expose, const QJsonObject &identity, const QJsonArray &availability, const QString &deviceTopic, const QString &endpointId, const QString &endpointName, const QString &uniqueId, const QString &haPrefix, bool haUpdate, bool remove);
