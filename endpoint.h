@@ -95,6 +95,7 @@ public:
 private:
 
     void publishDiscovery(HOMEd *controller, const Expose &expose, const QJsonObject &identity, const QJsonArray &availability, const QString &deviceTopic, const QString &endpointId, const QString &endpointName, const QString &uniqueId, const QString &haPrefix, bool haUpdate, bool remove);
+    void publishMedia(HOMEd *controller, const Expose &expose, const QJsonObject &identity, const QJsonArray &availability, const QString &deviceTopic, const QString &endpointId, const QString &endpointName, const QString &uniqueId, const QString &haPrefix, bool haUpdate, bool remove);
     void publishTriggers(HOMEd *controller, const Expose &expose, const QJsonObject &identity, const QJsonArray &availability, const QString &id, const QString &endpointName, const QString &uniqueId, const QString &haPrefix, const QString &object, const QString &title, bool remove);
 
     void addExposeData(const Expose &expose, const QString &endpointId, const QString &endpointName, QMap <QString, QVariant> &data);
@@ -121,6 +122,8 @@ public:
 
     inline QString name(void) { return m_name; }
     inline void setName(const QString &value) { m_name = value; }
+
+    inline AbstractEndpointObject *parent(void) { return m_parent; }
     inline void setParent(AbstractEndpointObject *value) { m_parent = value; }
 
     QVariant option(const QString &name = QString(), double defaultValue = NAN);

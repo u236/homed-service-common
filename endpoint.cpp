@@ -86,10 +86,33 @@ void AbstractDeviceObject::publishDiscovery(HOMEd *controller, const Expose &exp
 
     controller->mqttPublish(QString("%1/%2/%3/%4/config").arg(haPrefix, expose->component(), uniqueId, object), json, true);
 
+    if (expose->name() == "media")
+        publishMedia(controller, expose, identity, availability, deviceTopic, endpointId, endpointName, uniqueId, haPrefix, haUpdate, remove);
+
     if (!trigger.contains(expose->name().split('_').value(0)))
         return;
 
     publishTriggers(controller, expose, identity, availability, endpointId, endpointName, uniqueId, haPrefix, object, title, remove);
+}
+
+void AbstractDeviceObject::publishMedia(HOMEd *controller, const Expose &expose, const QJsonObject &identity, const QJsonArray &availability, const QString &deviceTopic, const QString &endpointId, const QString &endpointName, const QString &uniqueId, const QString &haPrefix, bool haUpdate, bool remove)
+{
+    QMap <QString, QString> map = {{"input", "selectExpose"}, {"volume", "numberExpose"}, {"mute", "toggleExpose"}, {"pause", "toggleExpose"}};
+    QList <QString> controls = expose->option().toStringList(), properties = ExposeObject::special().value("media");
+
+    for (int i = 0; i < properties.count(); i++)
+    {
+        QString property = properties.at(i);
+        int type = QMetaType::type(map.value(property).toUtf8());
+
+        if (type && controls.contains(property) && (property != "input" || !expose->option("input").toMap().value("enum").toList().isEmpty()))
+        {
+            Expose item(reinterpret_cast <ExposeObject*> (QMetaType::create(type)));
+            item->setName(property);
+            item->setParent(expose->parent());
+            publishDiscovery(controller, item, identity, availability, deviceTopic, endpointId, endpointName, uniqueId, haPrefix, haUpdate, remove);
+        }
+    }
 }
 
 void AbstractDeviceObject::publishTriggers(HOMEd *controller, const Expose &expose, const QJsonObject &identity, const QJsonArray &availability, const QString &endpointId, const QString &endpointName, const QString &uniqueId, const QString &haPrefix, const QString &object, const QString &title, bool remove)
@@ -196,7 +219,7 @@ void AbstractDeviceObject::addExposeData(const Expose &expose, const QString &en
                 if (control != "volume")
                     continue;
 
-                option = QMap <QString, QVariant> {{"min", 0}, {"max", 100}};
+                option = QMap <QString, QVariant> {{"min", 1}, {"max", 100}};
             }
 
             options.insert(control, option);
