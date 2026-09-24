@@ -44,7 +44,7 @@ void AbstractDeviceObject::updateThermostatOptions(void)
     for (int i = 0; i < properties.count(); i++)
     {
         QString property = properties.at(i);
-        QMap <QString, QVariant> option = {{"type", property == "targetTemperature" ? "number" : "select"}};
+        QMap <QString, QVariant> option = property == "targetTemperature" ? QMap <QString, QVariant> {{"type", "number"}, {"unit", "°C"}} : QMap <QString, QVariant> {{"type", "select"}};
 
         if (!m_options.contains(property))
             continue;
