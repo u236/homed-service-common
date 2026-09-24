@@ -5,6 +5,7 @@ static const QMap <QString, QList <QString>> specialExposes =
     {"switch",      {"status"}},
     {"lock",        {"status"}},
     {"light",       {"status", "level", "color", "colorTemperature", "colorMode"}},
+    {"media",       {"status", "input", "volume", "mute", "pause"}},
     {"cover",       {"position"}},
     {"thermostat",  {"temperature", "targetTemperature", "systemMode", "operationMode", "fanMode", "swingMode", "heatMode", "programType", "programTransitions", "runningStatus", "running"}}
 };

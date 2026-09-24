@@ -176,24 +176,36 @@ void AbstractDeviceObject::addExposeData(const Expose &expose, const QString &en
         options.insert(property, option.isValid() ? option : QMap <QString, QVariant> {{"min", 153}, {"max", 500}});
     }
 
-    if (list.value(0) == "thermostat")
+    if (list.value(0) == "media")
     {
-        QList <QString> controls = {"targetTemperature", "systemMode", "operationMode", "fanMode", "swingMode", "heatMode", "programType", "programTransitions", "runningStatus"};
+        QList <QString> controls = exposeOption.toStringList();
+
+        if (controls.contains("input") && expose->option("input").toMap().value("enum").toList().isEmpty())
+        {
+            controls.removeAll("input");
+            exposeOption = QVariant(controls);
+        }
 
         for (int i = 0; i < controls.count(); i++)
         {
-            QVariant option = expose->option(controls.at(i));
+            QString control = controls.at(i);
+            QVariant option = expose->option(control);
 
             if (!option.isValid())
-                continue;
+            {
+                if (control != "volume")
+                    continue;
 
-            options.insert(controls.at(i), option);
+                option = QMap <QString, QVariant> {{"min", 0}, {"max", 100}};
+            }
+
+            options.insert(control, option);
         }
     }
 
-    if (list.value(0) == "media")
+    if (list.value(0) == "thermostat")
     {
-        QList <QString> controls = {"volume", "input", "mute", "pause"};
+        QList <QString> controls = {"targetTemperature", "systemMode", "operationMode", "fanMode", "swingMode", "heatMode", "programType", "programTransitions", "runningStatus"};
 
         for (int i = 0; i < controls.count(); i++)
         {
