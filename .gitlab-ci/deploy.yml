@@ -77,7 +77,7 @@
   - "chmod +x deploy/data/etc/init.d/${NAME}"
   - "ARGS=$(sed 's/ = /:/; s/.*/-I \"&\"/' deploy/apk/.pkginfo | tr '\\n' ' '); eval apk mkpkg --sign /opt/apk/apk.key -I version:${CI_COMMIT_TAG} -I arch:${ARCHITECTURE} $ARGS --script post-install:deploy/apk/.post-install --script pre-deinstall:deploy/apk/.pre-deinstall -F deploy/data -o ${PACKAGE_FILE}"
   - "mkdir -p ${FEED_DIR}"
-  - "rm -f ${FEED_DIR}/${NAME}-*"
+  - "rm -f ${FEED_DIR}/${NAME}-[0-9]*.apk"
   - "cp ${PACKAGE_FILE} ${FEED_DIR}"
   - "apk mkndx --allow-untrusted --sign /opt/apk/apk.key -o ${FEED_DIR}/packages.adb ${FEED_DIR}/*.apk"
   artifacts:
