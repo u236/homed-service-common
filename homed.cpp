@@ -1,6 +1,7 @@
 #include <QFileInfo>
 #include <QLockFile>
 #include <QProcess>
+#include <QTextCodec>
 #include "homed.h"
 #include "logger.h"
 
@@ -18,6 +19,8 @@ HOMEd::HOMEd(const QString &version, const QString &configFile, bool multiple) :
     setLogEnabled(m_config->value("log/enabled", false).toBool());
     setLogTimestams(m_config->value("log/timestamps", true).toBool());
     setLogFile(m_config->value("log/file", "/var/log/homed.log").toString());
+
+    QTextCodec::setCodecForLocale(QTextCodec::codecForName("UTF-8"));
     qInstallMessageHandler(logger);
 
     m_mqttPrefix = m_config->value("mqtt/prefix", "homed").toString();
