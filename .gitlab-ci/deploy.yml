@@ -75,7 +75,7 @@
   - "cp deploy/procd/${NAME} deploy/data/etc/init.d"
   - "cp ${NAME}-openwrt-${ARCHITECTURE} deploy/data/usr/bin/${NAME}"
   - "chmod +x deploy/data/etc/init.d/${NAME}"
-  - "ARGS=$(sed 's/ = /:/; s/.*/-I \"&\"/' deploy/apk/.pkginfo | tr '\\n' ' '); eval apk mkpkg --sign /opt/apk/apk.key -I version:${CI_COMMIT_TAG} -I arch:${ARCHITECTURE} $ARGS --script post-install:deploy/apk/.post-install --script pre-deinstall:deploy/apk/.pre-deinstall -F deploy/data -o ${PACKAGE_FILE}"
+  - "ARGS=$(sed 's/ = /:/; s/.*/-I \"&\"/' deploy/apk/.pkginfo | tr '\\n' ' '); eval fakeroot apk mkpkg --sign /opt/apk/apk.key -I version:${CI_COMMIT_TAG} -I arch:${ARCHITECTURE} $ARGS --script post-install:deploy/apk/.post-install --script post-upgrade:deploy/apk/.post-upgrade --script pre-deinstall:deploy/apk/.pre-deinstall -F deploy/data -o ${PACKAGE_FILE}"
   - "mkdir -p ${FEED_DIR}"
   - "rm -f ${FEED_DIR}/${NAME}-[0-9]*.apk"
   - "cp ${PACKAGE_FILE} ${FEED_DIR}"
