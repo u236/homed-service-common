@@ -1,3 +1,4 @@
+#include <unistd.h>
 #include <QFileInfo>
 #include <QLockFile>
 #include <QProcess>
@@ -214,7 +215,7 @@ bool HOMEd::writeFile(QFile &file, const QByteArray &data)
 {
     bool check = true;
 
-    if (!file.open(QFile::WriteOnly))
+    if (!file.open(QFile::WriteOnly | QFile::Unbuffered))
     {
         logWarning << "File" << file.fileName() << "open error:" << file.errorString();
         return false;
@@ -226,11 +227,10 @@ bool HOMEd::writeFile(QFile &file, const QByteArray &data)
         check = false;
     }
 
-    file.close();
-
     if (check)
-        system("sync");
+        fsync(file.handle());
 
+    file.close();
     return check;
 }
 

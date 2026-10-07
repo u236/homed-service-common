@@ -3,14 +3,12 @@
 
 #define MQTT_DEFAULT_QOS            0
 #define MQTT_RECONNECT_INTERVAL     2000
-#define STATUS_UPDATE_PERIOD        60000
 #define EXIT_RESTART                1000
 
-#define mqttSafe(string)            QString(string).replace(QRegExp("[\\#|\\+|\\/]"), "_").trimmed()
+#define mqttSafe(string)            QString(string).replace(QRegExp("[#+/]"), "_").trimmed()
 
 #include <QtMqtt/QMqttClient>
 #include <QCoreApplication>
-#include <QElapsedTimer>
 #include <QFile>
 #include <QFileSystemWatcher>
 #include <QJsonArray>
