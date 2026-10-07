@@ -57,7 +57,7 @@ private:
     QFileSystemWatcher *m_watcher;
     QSettings *m_config;
 
-    QString m_mqttPrefix, m_serviceTopic, m_uniqueId;
+    QString m_mqttPrefix, m_instance, m_serviceTopic, m_uniqueId;
     quint32 m_interval;
     bool m_connected, m_first;
 

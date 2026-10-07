@@ -8,7 +8,6 @@
 HOMEd::HOMEd(const QString &version, const QString &configFile, bool multiple) : QObject(nullptr), m_mqtt(new QMqttClient(this)), m_serviceTimer(new QTimer(this)), m_reconnectTimer(new QTimer(this)), m_watcher(new QFileSystemWatcher(this)), m_connected(false), m_first(true)
 {
     QDate date = QDate::currentDate();
-    QString instance;
 
     m_coreServices = {"automation", "cloud", "recorder", "web"};
     m_deviceServices = {"zigbee", "matter", "modbus"};
@@ -24,8 +23,10 @@ HOMEd::HOMEd(const QString &version, const QString &configFile, bool multiple) :
     qInstallMessageHandler(logger);
 
     m_mqttPrefix = m_config->value("mqtt/prefix", "homed").toString();
+    m_instance = multiple ? m_config->value("mqtt/instance").toString() : QString();
+    m_serviceTopic = QCoreApplication::applicationName().split('-').last();
+    m_uniqueId = QString("homed-%1_%2").arg(m_serviceTopic, QString(m_mqttPrefix).replace('/', '-'));
     m_interval = static_cast <quint32> (m_config->value("mqtt/interval").toInt() * 1000);
-    instance = m_config->value("mqtt/instance").toString();
 
     if (date > QDate(date.year(), 12, 23) || date < QDate(date.year(), 1, 15))
         logInfo << "Merry Christmas and a Happy New Year!" << "\xF0\x9F\x8E\x81\xF0\x9F\x8E\x84\xF0\x9F\x8D\xBA";
@@ -34,14 +35,11 @@ HOMEd::HOMEd(const QString &version, const QString &configFile, bool multiple) :
     logInfo << "Configuration file is" << getConfig()->fileName();
     logInfo << "MQTT prefix is" << m_mqttPrefix;
 
-    m_serviceTopic = QCoreApplication::applicationName().split('-').last();
-    m_uniqueId = QString("homed-%1_%2").arg(m_serviceTopic, QString(m_mqttPrefix).replace('/', '-'));
-
-    if (multiple && !instance.isEmpty())
+    if (!m_instance.isEmpty())
     {
-        logInfo << "Instance name is" << instance;
-        m_serviceTopic.append('/').append(instance);
-        m_uniqueId.append('_').append(instance);
+        logInfo << "Instance name is" << m_instance;
+        m_serviceTopic.append('/').append(m_instance);
+        m_uniqueId.append('_').append(m_instance);
     }
 
     m_mqtt->setHostname(m_config->value("mqtt/host", "localhost").toString());
@@ -93,8 +91,8 @@ void HOMEd::mqttPublishDiscovery(const QString &name, const QString &version, co
     QJsonObject identity;
 
     identity.insert("identifiers", QJsonArray {m_uniqueId});
-    identity.insert("name", QString("HOMEd %1 (%2)").arg(name, m_mqttPrefix));
-    identity.insert("model", QString("HOMEd %1 Service (%2)").arg(name, m_mqttPrefix));
+    identity.insert("name", QString("HOMEd %1 (%2)").arg(name, m_instance.isEmpty() ? m_mqttPrefix : QString("%1/%2").arg(m_mqttPrefix, m_instance)));
+    identity.insert("model", QString("HOMEd %1 Service").arg(name));
     identity.insert("sw_version", version);
 
     for (int i = 0; i < list.count(); i++)
