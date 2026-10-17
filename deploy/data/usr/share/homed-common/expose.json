@@ -162,6 +162,7 @@
   "vocLow":                     {"type": "number", "unit": "ppb", "icon": "mdi:molecule"},
   "voltageHigh":                {"type": "number", "unit": "V", "icon": "mdi:sine-wave"},
   "voltageLow":                 {"type": "number", "unit": "V", "icon": "mdi:sine-wave"},
+  "voltageThreshold":           {"type": "number", "unit": "V", "icon": "mdi:sine-wave"},
 
   "buttonMode":                 {"type": "select", "enum": ["relay", "decoupled"]},
   "detectionMode":              {"type": "select", "enum": ["undirected", "directed"]},
