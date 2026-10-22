@@ -1,5 +1,25 @@
 #include "expose.h"
 
+static const QMap <QString, QString> abbreviations =
+{
+    {"co2",         "CO2"},
+    {"cpu",         "CPU"},
+    {"dhcp",        "DHCP"},
+    {"ec",          "EC"},
+    {"eco2",        "eCO2"},
+    {"id",          "ID"},
+    {"ir",          "IR"},
+    {"pm",          "PM"},
+    {"pm1",         "PM1"},
+    {"pm4",         "PM4"},
+    {"pm10",        "PM10"},
+    {"pm25",        "PM2.5"},
+    {"sg",          "SG"},
+    {"tds",         "TDS"},
+    {"uv",          "UV"},
+    {"voc",         "VOC"}
+};
+
 static const QMap <QString, QList <QString>> specialExposes =
 {
     {"switch",      {"status"}},
@@ -38,19 +58,27 @@ QString ExposeObject::title(void)
     if (title.isEmpty())
     {
         QList <QString> list = QString(m_name).replace('_', 0x20).replace(QRegExp("([A-Z])"), " \\1").toLower().split(0x20);
-        QMap <QString, QString> replacement = {{"co2", "CO2"}, {"ec", "EC"}, {"eco2", "eCO2"}, {"pm", "PM"}, {"pm1", "PM1"}, {"pm4", "PM4"}, {"pm10", "PM10"}, {"pm25", "PM2.5"}, {"sg", "SG"}, {"tds", "TDS"}, {"uv", "UV"}, {"voc", "VOC"}};
-        QString part = list.value(0);
-
-        list.replace(0, replacement.contains(part) ? replacement.value(part) : part.replace(0, 1, part.at(0).toUpper()));
 
         for (int i = 0; i < list.count(); i++)
         {
-            part = list.at(i).toLower();
+            QString part = list.at(i);
 
-            if (part != "id" && part != "ir" && !QRegExp("^[pt]\\d+$").exactMatch(part))
+            if (abbreviations.contains(part))
+            {
+                list.replace(i, abbreviations.value(part));
+                continue;
+            }
+
+            if (QRegExp("^[pt]\\d+$").exactMatch(part))
+            {
+                list.replace(i, part.toUpper());
+                continue;
+            }
+
+            if (i)
                 continue;
 
-            list.replace(i, part.toUpper());
+            list.replace(i, part.replace(0, 1, part.at(0).toUpper()));
         }
 
         return list.join(0x20);

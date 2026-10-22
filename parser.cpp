@@ -260,9 +260,9 @@ QString Parser::transliterate(const QString& string)
 
 QString Parser::formatValue(const QString &string)
 {
-    QRegExp regexp("\\((.*)\\)");
+    QRegExp expression("\\((.*)\\)");
 
-    if (regexp.indexIn(string) != -1)
+    if (expression.indexIn(string) != -1)
     {
         QList <QString> actionList = {"fromHex", "toHex", "time"};
 
@@ -270,7 +270,7 @@ QString Parser::formatValue(const QString &string)
         {
             case 0: // fromHex
             {
-                QByteArray data = QByteArray::fromHex(regexp.cap(1).toUtf8());
+                QByteArray data = QByteArray::fromHex(expression.cap(1).toUtf8());
                 QList <QString> list;
 
                 for (int i = 0; i < data.length(); i++)
@@ -281,7 +281,7 @@ QString Parser::formatValue(const QString &string)
 
             case 1: // toHex
             {
-                QList <QString> list = regexp.cap(1).split(',');
+                QList <QString> list = expression.cap(1).split(',');
                 QByteArray data;
 
                 for (int i = 0; i < list.count(); i++)
@@ -293,7 +293,7 @@ QString Parser::formatValue(const QString &string)
             case 2: // time
             {
                 bool check;
-                QList <QString> list = regexp.cap(1).split('|');
+                QList <QString> list = expression.cap(1).split('|');
                 qint64 value = list.value(1).toLongLong(&check);
                 QDateTime dateTime = check ? QDateTime::fromSecsSinceEpoch(value) : QDateTime::currentDateTime();
                 return list.value(0).isEmpty() ? QString::number(dateTime.currentSecsSinceEpoch()) : dateTime.toString(list.value(0).trimmed());
