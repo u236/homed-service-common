@@ -1,15 +1,19 @@
-URL="https://api.github.com/repositories/527469371/contents/deploy/data/usr/share/homed-zigbee"
+#!/bin/sh
+
+URL="https://codeload.github.com/u236/homed-service-zigbee/tar.gz/master"
+TMP="/tmp/homed-zigbee-library-update"
 DIR="/usr/share/homed-zigbee"
 
-for LINK in $(curl -s ${URL} | jq -r '.[].download_url'); do
-    FILE="${LINK##*/}"
-    printf "Get %s..." ${FILE}
-    curl -so /tmp/${FILE} ${LINK}
-    if cat /tmp/${FILE} | jq &>/dev/null; then
-        printf "OK\n"
-        mv /tmp/${FILE} ${DIR}
-    else
-        printf "FAILED\n"
-        break
-    fi
-done
+rm -rf ${TMP} && mkdir -p ${TMP}
+
+printf "Get HOMEd ZigBee library files..."
+
+if curl -s ${URL} | tar -xzf - -C ${TMP}; then
+    rm -rf ${DIR}/*
+    cp -r ${TMP}/homed-service-zigbee-master/deploy/data/usr/share/homed-zigbee/* ${DIR}
+    printf "OK\n"
+else
+    printf "FAILED\n"
+fi
+
+rm -rf ${TMP}
