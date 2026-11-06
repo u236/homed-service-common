@@ -86,8 +86,8 @@ public:
     inline Availability availability(void) { return m_availability; }
     inline void setAvailability(Availability value) { m_availability = value; }
 
-    inline QMap <QString, QVariant> &options(void) { return m_options; }
     inline QMap <quint8, Endpoint> &endpoints(void) { return m_endpoints; }
+    inline QMap <QString, QVariant> &options(void) { return m_options; }
 
     void updateOption(const QString &name, const QString &option, const QVariant &value);
     void publishExposes(HOMEd *controller, const QString &address, const QString uniqueId, const QString haPrefix, bool haEnabled, bool haUpdate, bool names, bool remove = false);
@@ -111,8 +111,8 @@ protected:
 
     Availability m_availability;
 
-    QMap <QString, QVariant> m_options;
     QMap <quint8, Endpoint> m_endpoints;
+    QMap <QString, QVariant> m_options;
 
 };
 
