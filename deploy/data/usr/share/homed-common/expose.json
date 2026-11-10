@@ -54,6 +54,7 @@
   "pmSize":                     {"type": "sensor", "unit": "µm", "round": 2, "icon": "mdi:molecule"},
   "position":                   {"type": "sensor", "unit": "%", "icon": "mdi:valve"},
   "power":                      {"type": "sensor", "class": "power", "state": "measurement", "unit": "W", "round": 2},
+  "powerFactor":                {"type": "sensor", "class": "power_factor", "state": "measurement", "round": 2},
   "presenceStatus":             {"type": "sensor", "icon": "mdi:home"},
   "pressure":                   {"type": "sensor", "class": "pressure", "state": "measurement", "unit": "kPa", "round": 1},
   "producedEnergy":             {"type": "sensor", "class": "energy", "state": "increasing", "unit": "kWh", "round": 2},
